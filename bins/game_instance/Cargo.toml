@@ -1,0 +1,23 @@
+[package]
+name = "game_instance"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name    = "game_instance"
+test    = false
+doctest = false
+
+[features]
+dev = ["bevy/dynamic_linking"]
+
+[dependencies]
+bevy               = { workspace = true }
+clap               = { workspace = true, features = [ "derive" ] }
+tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
+tracing            = { workspace = true }
+
+bevy_girk_game_instance = { workspace = true, features = ["process"] }
+bevy_girk_utils           = { workspace = true }
+
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }

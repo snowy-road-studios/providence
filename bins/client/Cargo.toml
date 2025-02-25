@@ -1,0 +1,39 @@
+[package]
+name = "client"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name    = "client"
+test    = false
+doctest = false
+
+[features]
+dev = ["user_client/dev", "wiring_client_instance/dev"]
+
+[dependencies]
+bevy               = { workspace = true, default-features = true }
+clap               = { workspace = true, default-features = true, features = [ "derive" ] }
+enfync             = { workspace = true }
+bevy_simplenet     = { workspace = true, features = [ "client", "bevy" ] }
+tracing            = { workspace = true }
+tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
+url                = { workspace = true }
+wasm-timer         = { workspace = true }
+
+bevy_girk_backend_public    = { workspace = true }
+bevy_girk_client_instance   = { workspace = true }
+bevy_girk_game_instance     = { workspace = true }
+bevy_girk_utils             = { workspace = true }
+
+user_client = { path = "../../libs/user_client" }
+wiring_backend = { path = "../../libs/wiring_backend" }
+wiring_client_instance = { path = "../../libs/wiring_client_instance" }
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+rustls = { workspace = true }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+console_error_panic_hook = { version = "0.1" }
+tracing-wasm             = { version = "0.2" }

@@ -1,0 +1,11 @@
+[package]
+name = "tests"
+version.workspace = true
+edition.workspace = true
+publish = false
+
+[dev-dependencies]
+
+[[test]]
+name = "tests"
+path = "tests.rs"

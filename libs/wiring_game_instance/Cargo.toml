@@ -1,0 +1,36 @@
+[package]
+name = "wiring_game_instance"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+test    = false
+doctest = false
+
+[dependencies]
+bevy = { workspace = true }
+bevy_replicon = { workspace = true }
+renet2_setup = { workspace = true, features = ["netcode", "memory_transport"] }
+serde = { workspace = true }
+tracing = { workspace = true }
+wasm-timer = { workspace = true }
+
+bevy_girk_client_fw       = { workspace = true }
+bevy_girk_game_fw         = { workspace = true }
+bevy_girk_game_instance   = { workspace = true }
+bevy_girk_utils           = { workspace = true }
+
+game_core = { path = "../game_core" }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+bevy_girk_wiring_server = { workspace = true, features = [
+    "memory_transport",
+    "native_transport",
+    "wasm_transport_wt",
+    "wasm_transport_ws"
+] }
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+bevy_girk_wiring_server = { workspace = true, features = [
+    "memory_transport",
+] }

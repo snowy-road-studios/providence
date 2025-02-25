@@ -1,0 +1,32 @@
+[package]
+name = "playtest"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name    = "playtest"
+test    = false
+doctest = false
+
+[features]
+dev = ["bevy/dynamic_linking"]
+
+[dependencies]
+bevy               = { workspace = true }
+bevy_cobweb        = { workspace = true }
+bevy_simplenet     = { workspace = true }
+clap               = { workspace = true, features = [ "derive" ] }
+enfync             = { workspace = true }
+renet2_setup       = { workspace = true, features = ["netcode"] }
+serde_json         = { workspace = true }
+tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
+tracing            = { workspace = true }
+tokio              = { workspace = true, default-features = false, features = ["process"] }
+
+bevy_girk_game_fw = { workspace = true }
+bevy_girk_game_instance = { workspace = true, features = ["process"] }
+bevy_girk_utils = { workspace = true }
+
+game_core            = { path = "../../libs/game_core" }
+wiring_backend       = { path = "../../libs/wiring_backend" }
+wiring_game_instance = { path = "../../libs/wiring_game_instance" }
