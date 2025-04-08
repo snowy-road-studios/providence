@@ -21,7 +21,7 @@ impl Plugin for GameOverPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_systems(OnEnter(ClientState::GameOver), game_over_screen);
+        app.add_systems(OnEnter(ClientState::End), game_over_screen);
     }
 }
 

@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
-use bevy_replicon::prelude::*;
 
 use crate::*;
 
@@ -35,10 +34,6 @@ fn setup_game(world: &mut World)
     }
 
     world.insert_resource(PlayerMap::new(client_entity_map));
-
-    // watchers
-    // - watcher map
-    world.insert_resource(WatcherMap::new(initializer.watchers));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

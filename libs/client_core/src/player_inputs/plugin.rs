@@ -11,7 +11,7 @@ fn prestartup_check(world: &World)
 {
     // check for expected resources
     if !world.contains_resource::<Receiver<PlayerInput>>() {
-        tracing::error!("Receiver<PlayerClientInput> is missing on game startup!");
+        tracing::error!("Receiver<PlayerInput> is missing on game startup!");
     }
 }
 
@@ -34,6 +34,17 @@ impl Plugin for PlayerInputPlugin
         app.add_systems(OnEnter(ClientAppState::Game), prestartup_check)
             .add_systems(Update, handle_player_inputs.in_set(PlayerInputSet))
             .add_systems(OnEnter(ClientAppState::Game), clear_player_inputs);
+
+        #[cfg(feature = "dev")]
+        {
+            app.add_systems(
+                Update,
+                handle_dev_inputs
+                    .in_set(PlayerInputSet)
+                    .after(handle_player_inputs),
+            )
+            .add_systems(OnEnter(ClientAppState::Game), clear_dev_inputs);
+        }
     }
 }
 

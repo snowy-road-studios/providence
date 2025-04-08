@@ -64,14 +64,6 @@ $lobby_list_text_size = 20
                     TextLine{size:20}
                     TextLineColor(#FFFFFF)
 
-            ""
-                FlexNode{width:10px}
-
-            "watchers"
-                "text"
-                    TextLine{size:20}
-                    TextLineColor(#FFFFFF)
-
     "content"
         FlexNode{width:100% flex_grow:1 flex_direction:Column justify_main:FlexStart justify_cross:Center}
 
@@ -205,13 +197,6 @@ $lobby_list_text_size = 20
                                 ""
                                     Margin{top:5px bottom:5px}
                                     TextLine{text:"Players" size:$lobby_list_text_size}
-                            "watchers"
-                                FlexNode{height:100% justify_main:Center justify_cross:Center}
-                                Border{right:1px bottom:1px}
-                                BorderColor($lobby_list_line_color)
-                                ""
-                                    Margin{top:5px bottom:5px}
-                                    TextLine{text:"Watchers" size:$lobby_list_text_size}
                             "join_shim"
                                 FlexNode{height:100%}
                                 Border{bottom:1px}
@@ -280,13 +265,6 @@ $lobby_list_text_size = 20
         TextLine{size:$lobby_list_text_size}
         TextLineColor(#FFFFFF)
 "lobby_list_entry_players"
-    FlexNode{height:100% justify_main:Center justify_cross:Center}
-    Border{right:1px bottom:1px}
-    BorderColor($lobby_list_line_color)
-    "text"
-        TextLine{size:$lobby_list_text_size}
-        TextLineColor(#FFFFFF)
-"lobby_list_entry_watchers"
     FlexNode{height:100% justify_main:Center justify_cross:Center}
     Border{right:1px bottom:1px}
     BorderColor($lobby_list_line_color)

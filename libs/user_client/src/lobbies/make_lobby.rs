@@ -23,7 +23,6 @@ fn single_player_lobby(owner_id: u128, data: &MakeLobbyData) -> ProvLobbyContent
         owner_id,
         config: data.config.clone(),
         players: vec![(ConnectionType::Memory, owner_id)], // Must use memory connection type
-        watchers: vec![],
     }
 }
 
@@ -132,7 +131,7 @@ impl Default for MakeLobbyData
         Self {
             member_type: ProvLobbyMemberType::Player,
             pwd: String::default(),
-            config: ProvLobbyConfig { max_players: 1, max_watchers: 0 },
+            config: ProvLobbyConfig { max_players: 1 },
         }
     }
 }

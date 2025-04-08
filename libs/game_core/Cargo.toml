@@ -7,11 +7,16 @@ edition.workspace = true
 test    = false
 doctest = false
 
+[features]
+# Enables handling of dev inputs from clients.
+dev = []
+
 [dependencies]
 bevy                     = { workspace = true }
 bevy_cobweb              = { workspace = true }
 bevy_replicon            = { workspace = true }
 bevy_replicon_attributes = { workspace = true }
+renet2                   = { workspace = true }
 serde                    = { workspace = true }
 tracing                  = { workspace = true }
 

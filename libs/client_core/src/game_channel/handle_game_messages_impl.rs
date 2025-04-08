@@ -24,9 +24,9 @@ fn update_client_state(
     // update game state
     let new_client_state = match game_state {
         GameState::Startup | GameState::Init => ClientState::Init,
-        GameState::Prep => ClientState::Prep,
+        GameState::TileSelect => ClientState::TileSelect,
         GameState::Play => ClientState::Play,
-        GameState::GameOver => ClientState::GameOver,
+        GameState::End => ClientState::End,
     };
 
     if new_client_state == **current_client_state {

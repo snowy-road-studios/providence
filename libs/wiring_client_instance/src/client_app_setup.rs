@@ -12,6 +12,13 @@ pub fn setup_client_game(world: &mut World, initializer: ClientInitializer)
     world.insert_resource(initializer);
     world.insert_resource(player_input_receiver);
     world.insert_resource(player_input_sender);
+
+    #[cfg(feature = "dev")]
+    {
+        let (dev_input_sender, dev_input_receiver) = new_channel::<game_core::DevInput>();
+        world.insert_resource(dev_input_receiver);
+        world.insert_resource(dev_input_sender);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

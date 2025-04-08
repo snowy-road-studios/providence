@@ -3,7 +3,9 @@ use bevy_cobweb::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_client_fw::ClientFwConfig;
 use bevy_girk_client_instance::ClientInstanceCommand;
+use utils::RootConfigs;
 use wiring_backend::*;
+use wiring_game_instance::*;
 
 use crate::*;
 
@@ -59,6 +61,7 @@ pub(crate) fn start_current_lobby(
     starter: ReactRes<ClientStarter>,
     config: Option<Res<ClientFwConfig>>,
     launch_lobby: PendingRequestParam<LaunchLobby>,
+    configs: Res<RootConfigs>,
 )
 {
     // check for existing request
@@ -100,7 +103,13 @@ pub(crate) fn start_current_lobby(
             }
 
             // prep launch pack
-            let game_configs = make_prov_game_configs();
+            let game_configs = match make_prov_game_configs(None, None, None, None, &configs) {
+                Ok(c) => c,
+                Err(err) => {
+                    tracing::error!("failed getting prov game configs for local player game: {}", err.as_str());
+                    return;
+                }
+            };
             let Ok(launch_pack) = get_launch_pack(game_configs, lobby_contents) else {
                 tracing::error!("failed getting launch pack for local player game");
                 return;

@@ -1,15 +1,25 @@
-use std::net::Ipv6Addr;
+use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use bevy_girk_game_fw::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
-use game_core::*;
-use renet2_setup::{ConnectionType, GameServerSetupConfig};
+use renet2_setup::ConnectionType;
+use utils::RootConfigs;
 use wiring_backend::*;
 use wiring_game_instance::*;
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn config_paths() -> Vec<PathBuf>
+{
+    let mut paths = Vec::default();
+    paths.push("/game/game.toml".into());
+    paths.push("/game_client/game_client.toml".into());
+
+    paths
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -25,10 +35,28 @@ struct PlaytestCli
     client: Option<String>,
 }
 
-//-------------------------------------------------------------------------------------------------------------------
+impl PlaytestCli
+{
+    fn extract(self) -> PlaytestCliResolved
+    {
+        let num_clients = self.clients.unwrap_or(1usize).max(1usize);
+        let game_instance_path = self
+            .game
+            .unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
+        let game_client_path = self
+            .client
+            .unwrap_or_else(|| String::from(GAME_CLIENT_PATH));
 
-const GAME_INSTANCE_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
-const GAME_CLIENT_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
+        PlaytestCliResolved { num_clients, game_instance_path, game_client_path }
+    }
+}
+
+struct PlaytestCliResolved
+{
+    num_clients: usize,
+    game_instance_path: String,
+    game_client_path: String,
+}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -41,62 +69,18 @@ fn get_systime() -> Duration
 
 //-------------------------------------------------------------------------------------------------------------------
 
-//todo: move this somewhere else...
-fn make_prov_game_configs() -> ProvGameFactoryConfig
-{
-    // game duration
-    let game_ticks_per_sec = 20;
-    let game_num_ticks = game_ticks_per_sec * 30;
-
-    // versioning
-    //todo: use hasher directly?
-    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-
-    // config
-    let max_init_ticks = game_ticks_per_sec * 5;
-    let game_prep_ticks = 0;
-    let game_over_ticks = game_ticks_per_sec * 3;
-
-    // server setup config
-    let server_setup_config = GameServerSetupConfig {
-        protocol_id,
-        // dev may cause long startup times
-        #[cfg(feature = "dev")]
-        expire_secs: 20u64,
-        #[cfg(not(feature = "dev"))]
-        expire_secs: 10u64,
-        timeout_secs: 5i32,
-        server_ip: Ipv6Addr::LOCALHOST.into(),
-        native_port: 0,
-        wasm_wt_port: 0,
-        wasm_ws_port: 0,
-        proxy_ip: None,
-        ws_domain: None,
-        wss_certs: None,
-    };
-
-    // game framework config
-    let game_fw_config = GameFwConfig::new(game_ticks_per_sec, max_init_ticks, game_over_ticks);
-
-    // game duration config
-    let duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
-
-    // prov game factory config
-    let game_factory_config = ProvGameFactoryConfig {
-        server_setup_config,
-        game_fw_config,
-        duration_config,
-        resend_time: Duration::from_millis(300),
-    };
-
-    game_factory_config
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_client_path: String)
+fn run_playtest(
+    launch_pack: GameLaunchPack,
+    game_instance_path: String,
+    game_client_path: String,
+    configs: &RootConfigs,
+)
 {
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
+
+    let renet2_client_resend_time: u64 = configs
+        .get_integer("game_client", "RENET2_RESEND_TIME_MILLIS")
+        .unwrap();
 
     // launch game
     tracing::trace!("launching game instance for playtest");
@@ -139,10 +123,15 @@ fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_cl
                 continue;
             };
 
+            let Ok(resend_time_ser) = serde_json::to_string(&renet2_client_resend_time) else {
+                tracing::error!(game_id, "failed serializing renet2 resend time for playtest game client");
+                continue;
+            };
+
             tracing::trace!(start_info.client_id, "launching game client for playtest");
 
             let Ok(child_process) = tokio::process::Command::new(&game_client_path)
-                .args(["-T", &token_ser, "-S", &start_info_ser])
+                .args(["-T", &token_ser, "-S", &start_info_ser, "-R", &resend_time_ser])
                 .spawn()
             else {
                 tracing::error!("failed launching game client for playtest at {:?}", game_client_path);
@@ -183,6 +172,14 @@ fn run_playtest(launch_pack: GameLaunchPack, game_instance_path: String, game_cl
 
 //-------------------------------------------------------------------------------------------------------------------
 
+const DEFAULT_CONFIG_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../config");
+#[cfg(feature = "dev")]
+const CONFIGS_OVERRIDE_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/config");
+const GAME_INSTANCE_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
+const GAME_CLIENT_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
+
+//-------------------------------------------------------------------------------------------------------------------
+
 fn main()
 {
     // logging
@@ -206,39 +203,40 @@ fn main()
     // env
     let args = PlaytestCli::parse();
     tracing::trace!(?args);
+    let args = args.extract();
 
-    // unwrap args
-    let num_clients = args.clients.unwrap_or(1usize).max(1usize);
-    let game_instance_path = args
-        .game
-        .unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
-    let game_client_path = args
-        .client
-        .unwrap_or_else(|| String::from(GAME_CLIENT_PATH));
+    // configs
+    let mut configs = RootConfigs::default();
+    configs
+        .read(DEFAULT_CONFIG_DIR.into(), config_paths())
+        .unwrap();
+    #[cfg(feature = "dev")]
+    configs
+        .read(CONFIGS_OVERRIDE_DIR.into(), config_paths())
+        .unwrap();
 
     // lobby contents
     let mut players = Vec::default();
-    for idx in 0..num_clients {
+    for idx in 0..args.num_clients {
         players.push((ConnectionType::Native, idx as u128));
     }
 
     let lobby_contents = ProvLobbyContents {
         id: 0u64,
         owner_id: 0u128,
-        config: ProvLobbyConfig { max_players: num_clients as u16, max_watchers: 0u16 },
+        config: ProvLobbyConfig { max_players: args.num_clients as u16 },
         players,
-        watchers: Vec::default(),
     };
 
     // launch pack
-    let game_configs = make_prov_game_configs();
+    let game_configs = make_prov_game_configs(None, None, None, None, &configs).unwrap();
     let Ok(launch_pack) = get_launch_pack(game_configs, lobby_contents) else {
         tracing::error!("failed getting launch pack for playtest");
         return;
     };
 
     // run it
-    run_playtest(launch_pack, game_instance_path, game_client_path);
+    run_playtest(launch_pack, args.game_instance_path, args.game_client_path, &configs);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

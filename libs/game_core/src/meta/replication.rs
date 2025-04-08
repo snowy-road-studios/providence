@@ -14,9 +14,7 @@ impl Plugin for GameReplicationPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.replicate::<PlayerId>()
-            .replicate::<PlayerName>()
-            .replicate::<PlayerScore>();
+        app.replicate::<PlayerId>().replicate::<PlayerName>();
     }
 }
 

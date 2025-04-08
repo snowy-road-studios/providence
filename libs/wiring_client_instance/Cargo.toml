@@ -8,7 +8,7 @@ test    = false
 doctest = false
 
 [features]
-dev = ["client_skin/dev"]
+dev = ["game_core/dev", "client_core/dev", "client_skin/dev"]
 
 [dependencies]
 bevy = { workspace = true, default_features = true }

@@ -40,11 +40,6 @@ LoadImages[
         "logo"
             LoadedImageNode{image:"logo.png"}
 
-        "text"
-            FlexNode{margin:{top:10px}}
-            TextLine{text:"DEMO"}
-            TextLineColor(#000000)
-
     ""
         FlexNode{height:1px width:80% margin:{top:6.5px}}
         BackgroundColor(#000000)

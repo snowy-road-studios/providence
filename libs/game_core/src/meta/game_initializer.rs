@@ -1,7 +1,6 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use bevy::prelude::*;
-use bevy_replicon::prelude::*;
 
 use crate::*;
 
@@ -17,8 +16,6 @@ pub struct ProvGameInitializer
     pub game_context: ProvGameContext,
     /// Player states.
     pub players: HashMap<ClientId, PlayerState>,
-    /// Watchers.
-    pub watchers: HashSet<ClientId>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 use bevy_girk_utils::*;
-use bevy_replicon::prelude::ChannelKind;
+use bevy_replicon::prelude::Channel;
 use serde::{Deserialize, Serialize};
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -8,18 +8,27 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub enum PlayerInput
 {
-    /// Click a button.
-    ClickButton,
+    Placeholder,
 }
 
-impl IntoChannelKind for PlayerInput
+impl IntoChannel for PlayerInput
 {
-    fn into_event_type(&self) -> ChannelKind
+    fn into_event_type(&self) -> Channel
     {
         match &self {
-            Self::ClickButton => SendUnordered.into(),
+            Self::Placeholder => SendUnordered.into(),
         }
     }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Special developer inputs that can be sent to the game.
+#[cfg(feature = "dev")]
+#[derive(Debug, Serialize, Deserialize, Copy, Clone)]
+pub enum DevInput
+{
+    EndGame,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -32,15 +41,19 @@ pub enum ClientRequest
     GetGameState,
     /// Player input.
     PlayerInput(PlayerInput),
+    #[cfg(feature = "dev")]
+    DevInput(DevInput),
 }
 
-impl IntoChannelKind for ClientRequest
+impl IntoChannel for ClientRequest
 {
-    fn into_event_type(&self) -> ChannelKind
+    fn into_event_type(&self) -> Channel
     {
         match &self {
             Self::GetGameState => SendOrdered.into(),
             Self::PlayerInput(input) => input.into_event_type(),
+            #[cfg(feature = "dev")]
+            Self::DevInput(input) => SendOrdered.into(),
         }
     }
 }

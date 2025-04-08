@@ -5,17 +5,22 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// System sets that contain tick game logic. These don't run during initialization.
+/// Runs in [`Update`] when not in [`GameFwState::Init`].
 ///
-/// These sets are modal. Use [`GameFwSet`] for ordinal control.
+/// This set is modal.
+#[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
+pub struct PostInitSet;
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// System sets that contain game logic. These don't run during initialization.
+///
+/// These sets are modal.
 #[derive(SystemSet, Debug, Hash, PartialEq, Eq, Clone)]
 pub enum GameSet
 {
-    /// Runs in [`Update`] when not in [`GameFwStateInit`].
-    PostInit,
-    Prep,
+    TileSelect,
     Play,
-    GameOver,
     End,
 }
 
@@ -40,29 +45,32 @@ impl Plugin for GameSetsPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.configure_sets(Update, GameSet::PostInit.run_if(not(in_state(GameFwState::Init))))
+        app.configure_sets(Update, (GameLogicSet::Admin, GameLogicSet::Update).chain())
+            .configure_sets(Update, PostInitSet.run_if(not(in_state(GameFwState::Init))))
             .configure_sets(
                 Update,
-                GameSet::Prep
+                GameSet::TileSelect
                     .run_if(in_state(GameFwState::Game))
-                    .run_if(in_state(GameState::Prep)),
+                    .run_if(in_state(GameState::TileSelect))
+                    .in_set(GameLogicSet::Update),
             )
             .configure_sets(
                 Update,
                 GameSet::Play
                     .run_if(in_state(GameFwState::Game))
-                    .run_if(in_state(GameState::Play)),
+                    .run_if(in_state(GameState::Play))
+                    .in_set(GameLogicSet::Update),
             )
             // - This will only run in the span between entering 'game over' and the GameFwState moving to 'End',
             //   which is controlled by `GameFwConfig::max_end_ticks()`.
-            //todo: allow GameOver to last indefinitely?
+            //todo: allow End to last indefinitely?
             .configure_sets(
                 Update,
-                GameSet::GameOver
+                GameSet::End
                     .run_if(in_state(GameFwState::Game))
-                    .run_if(in_state(GameState::GameOver)),
-            )
-            .configure_sets(Update, (GameLogicSet::Admin, GameLogicSet::Update).chain());
+                    .run_if(in_state(GameState::End))
+                    .in_set(GameLogicSet::Update),
+            );
     }
 }
 

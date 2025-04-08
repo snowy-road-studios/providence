@@ -6,14 +6,15 @@ mod plugin;
 mod sets;
 mod setup;
 mod states;
-mod ticks;
+mod time;
 
 pub use client::*;
 pub use client_channel::*;
 pub use game_rand::*;
 pub use meta::*;
 pub use plugin::*;
+pub use renet2::ClientId;
 pub use sets::*;
 pub(crate) use setup::*;
 pub use states::*;
-pub use ticks::*;
+pub use time::*;

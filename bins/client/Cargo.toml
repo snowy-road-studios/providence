@@ -27,6 +27,7 @@ bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
 
 user_client = { path = "../../libs/user_client" }
+utils = { path = "../../libs/utils" }
 wiring_backend = { path = "../../libs/wiring_backend" }
 wiring_client_instance = { path = "../../libs/wiring_client_instance" }
 wiring_game_instance = { path = "../../libs/wiring_game_instance" }
@@ -36,4 +37,5 @@ rustls = { workspace = true }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
 console_error_panic_hook = { version = "0.1" }
-tracing-wasm             = { version = "0.2" }
+wasm-bindgen = { workspace = true }
+tracing-wasm = { version = "0.2" }

@@ -12,15 +12,16 @@ pub struct ProvLobbyConfig
 {
     /// Max players allowed in the lobby.
     pub max_players: u16,
-    /// Max watchers allowed in the lobby.
-    pub max_watchers: u16,
+    // Max watchers allowed in the lobby.
+    // pub max_watchers: u16,
 }
 
 impl ProvLobbyConfig
 {
     pub fn is_single_player(&self) -> bool
     {
-        self.max_players == 1 && self.max_watchers == 0
+        // self.max_players == 1 && self.max_watchers == 0
+        self.max_players == 1
     }
 }
 
@@ -30,7 +31,7 @@ impl ProvLobbyConfig
 pub enum ProvLobbyMemberType
 {
     Player,
-    Watcher,
+    //Watcher,
 }
 
 impl TryFrom<LobbyMemberColor> for ProvLobbyMemberType
@@ -41,7 +42,7 @@ impl TryFrom<LobbyMemberColor> for ProvLobbyMemberType
     {
         match color.0 {
             0u64 => Ok(ProvLobbyMemberType::Player),
-            1u64 => Ok(ProvLobbyMemberType::Watcher),
+            //1u64 => Ok(ProvLobbyMemberType::Watcher),
             _ => Err(format!("failed converting {color:?} to ProvLobbyMemberType")),
         }
     }
@@ -53,7 +54,7 @@ impl Into<LobbyMemberColor> for ProvLobbyMemberType
     {
         match self {
             ProvLobbyMemberType::Player => LobbyMemberColor(0u64),
-            ProvLobbyMemberType::Watcher => LobbyMemberColor(1u64),
+            //ProvLobbyMemberType::Watcher => LobbyMemberColor(1u64),
         }
     }
 }
@@ -76,8 +77,8 @@ pub struct ProvLobbyContents
 
     /// Players in this lobby.
     pub players: Vec<(ConnectionType, u128)>,
-    /// Watchers in this lobby.
-    pub watchers: Vec<(ConnectionType, u128)>,
+    // Watchers in this lobby.
+    // pub watchers: Vec<(ConnectionType, u128)>,
 }
 
 impl ProvLobbyContents
@@ -86,7 +87,7 @@ impl ProvLobbyContents
     {
         match member_type {
             ProvLobbyMemberType::Player => self.players.get(idx).map(|(_, id)| id),
-            ProvLobbyMemberType::Watcher => self.watchers.get(idx).map(|(_, id)| id),
+            // ProvLobbyMemberType::Watcher => self.watchers.get(idx).map(|(_, id)| id),
         }
     }
 
@@ -94,7 +95,7 @@ impl ProvLobbyContents
     {
         match member_type {
             ProvLobbyMemberType::Player => self.players.len(),
-            ProvLobbyMemberType::Watcher => self.watchers.len(),
+            // ProvLobbyMemberType::Watcher => self.watchers.len(),
         }
     }
 
@@ -102,7 +103,7 @@ impl ProvLobbyContents
     {
         match member_type {
             ProvLobbyMemberType::Player => self.config.max_players,
-            ProvLobbyMemberType::Watcher => self.config.max_watchers,
+            // ProvLobbyMemberType::Watcher => self.config.max_watchers,
         }
     }
 
@@ -127,11 +128,11 @@ impl TryFrom<LobbyData> for ProvLobbyContents
 
         // members
         let mut players = Vec::default();
-        let mut watchers = Vec::default();
+        // let mut watchers = Vec::default();
         for (user_id, member_data) in data.members.iter() {
             match ProvLobbyMemberType::try_from(member_data.color)? {
                 ProvLobbyMemberType::Player => players.push((member_data.connection, *user_id)),
-                ProvLobbyMemberType::Watcher => watchers.push((member_data.connection, *user_id)),
+                // ProvLobbyMemberType::Watcher => watchers.push((member_data.connection, *user_id)),
             }
         }
 
@@ -140,7 +141,7 @@ impl TryFrom<LobbyData> for ProvLobbyContents
             owner_id: data.owner_id,
             config,
             players,
-            watchers,
+            // watchers,
         })
     }
 }

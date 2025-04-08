@@ -57,17 +57,6 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
                         },
                     );
                     c.ui_builder(*id).spawn_scene(
-                        ("ui.user.sections.play", "lobby_list_entry_watchers"),
-                        &mut s,
-                        |h| {
-                            h.get("text").update_text(format!(
-                                "{}/{}",
-                                lobby.num(ProvLobbyMemberType::Watcher),
-                                lobby.max(ProvLobbyMemberType::Watcher)
-                            ));
-                        },
-                    );
-                    c.ui_builder(*id).spawn_scene(
                         ("ui.user.sections.play", "lobby_list_entry_join_button"),
                         &mut s,
                         |h| {

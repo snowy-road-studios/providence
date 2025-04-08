@@ -1,7 +1,6 @@
 use bevy::prelude::*;
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::apply_state_transitions;
-use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -11,14 +10,14 @@ use crate::*;
 /// Check the game duration conditions and update the game state.
 fn update_game_state(
     game_ctx: Res<ProvGameContext>,
-    game_tick: Res<GameTick>,
+    game_time: Res<GameTime>,
     current_game_state: Res<State<GameState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
 )
 {
     // get expected state based on elapsed ticks
     let duration_config = game_ctx.duration_config();
-    let new_game_state = duration_config.expected_state(**game_tick);
+    let new_game_state = duration_config.expected_state(game_time.elapsed());
 
     // update the game state
     if new_game_state == **current_game_state {
@@ -30,20 +29,19 @@ fn update_game_state(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn set_game_end_flag(
-    game_tick: Res<GameTick>,
-    players: Query<(&PlayerId, &PlayerScore)>,
-    mut game_end_flag: ResMut<GameEndFlag>,
-)
+fn set_game_end_flag(game_time: Res<GameTime>, players: Query<&PlayerId>, mut game_end_flag: ResMut<GameEndFlag>)
 {
     // collect player reports
     let player_reports = players
         .iter()
-        .map(|(&player_id, &score)| ProvPlayerReport { client_id: player_id.id, score })
+        .map(|&player_id| ProvPlayerReport { client_id: player_id.id })
         .collect();
 
     // build game over report
-    let game_over_report = ProvGameOverReport { final_game_tick: **game_tick, player_reports };
+    let game_over_report = ProvGameOverReport {
+        game_duration_ms: game_time.elapsed().as_millis(),
+        player_reports,
+    };
 
     // serialize it
     let game_over_report_final = GameOverReport::new(&game_over_report);
@@ -87,7 +85,7 @@ pub(crate) fn notify_game_state_single(
     mut sender: GameSender,
 )
 {
-    sender.send_to_client(GameMsg::CurrentGameState(**game_state), client_id.get());
+    sender.send_to_client(GameMsg::CurrentGameState(**game_state), client_id);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -99,9 +97,9 @@ pub enum GameState
     #[default]
     Startup,
     Init,
-    Prep,
+    TileSelect,
     Play,
-    GameOver,
+    End,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -120,22 +118,18 @@ impl Plugin for GameStatePlugin
     {
         app.init_state::<GameState>()
             .enable_state_scoped_entities::<GameState>()
+            .configure_sets(Update, GameStateUpdateSet.in_set(PostInitSet))
             .add_systems(PostStartup, set_init_state)
             .add_systems(
                 Update,
-                (
-                    // determine which game state the previous tick was in and set it
-                    update_game_state,
-                    apply_state_transitions,
-                )
+                (update_game_state, apply_state_transitions)
                     .chain()
-                    .in_set(GameSet::PostInit)
                     .in_set(GameStateUpdateSet),
             )
             .add_systems(OnEnter(GameState::Init), notify_game_state_all)
-            .add_systems(OnEnter(GameState::Prep), notify_game_state_all)
+            .add_systems(OnEnter(GameState::TileSelect), notify_game_state_all)
             .add_systems(OnEnter(GameState::Play), notify_game_state_all)
-            .add_systems(OnEnter(GameState::GameOver), (notify_game_state_all, set_game_end_flag));
+            .add_systems(OnEnter(GameState::End), (notify_game_state_all, set_game_end_flag));
     }
 }
 

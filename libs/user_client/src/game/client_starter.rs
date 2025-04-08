@@ -138,7 +138,7 @@ impl Plugin for ClientStarterPlugin
     {
         app.init_react_resource::<ClientStarter>()
             .init_resource::<CachedConnectToken>()
-            .add_systems(OnEnter(ClientState::GameOver), clear_starter)
+            .add_systems(OnEnter(ClientState::End), clear_starter)
             .add_systems(
                 Last,
                 try_start_game

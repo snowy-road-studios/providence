@@ -1,6 +1,5 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
-use bevy_replicon::prelude::*;
 
 use crate::*;
 
@@ -36,6 +35,11 @@ pub(crate) fn handle_client_request(world: &mut World, id: ClientId, req: Client
         ClientRequest::GetGameState => world.syscall(id, handle_game_state_request),
         ClientRequest::PlayerInput(i) => match state {
             GameState::Play => player_syscall(world, id, req, i, handle_player_input),
+            _ => reject(world),
+        },
+        #[cfg(feature = "dev")]
+        ClientRequest::DevInput(i) => match state {
+            GameState::Play => player_syscall(world, id, req, i, handle_dev_input),
             _ => reject(world),
         },
     }

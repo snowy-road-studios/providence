@@ -30,16 +30,6 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
             OK
         },
     );
-    h.get("header::member_count::watchers::text").update_on(
-        resource_mutation::<LobbyDisplay>(),
-        |id: TargetId, mut e: TextEditor, display: ReactRes<LobbyDisplay>| {
-            let lobby_contents = display.get().result()?;
-            let num_members = lobby_contents.num(ProvLobbyMemberType::Watcher);
-            let max_members = lobby_contents.max(ProvLobbyMemberType::Watcher);
-            write_text!(e, *id, "Watchers: {}/{}", num_members, max_members);
-            OK
-        },
-    );
 
     h.get("content::member_list::view::shim").update_on(
         resource_mutation::<LobbyDisplay>(),
@@ -53,13 +43,6 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
                     .spawn_scene(("ui.user.sections.play", "lobby_display_member"), &mut s, |h| {
                         h.get("text")
                             .update_text(format!("Player: {:0>6}", player_id % 1_000_000u128));
-                    });
-            }
-            for (_, watcher_id) in lobby_content.watchers.iter() {
-                c.ui_builder(*id)
-                    .spawn_scene(("ui.user.sections.play", "lobby_display_member"), &mut s, |h| {
-                        h.get("text")
-                            .update_text(format!("Watcher: {:0>6}", watcher_id % 1_000_000u128));
                     });
             }
 

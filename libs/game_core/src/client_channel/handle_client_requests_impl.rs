@@ -1,22 +1,8 @@
 use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_girk_game_fw::*;
-use bevy_replicon::prelude::*;
 
 use crate::*;
-
-//-------------------------------------------------------------------------------------------------------------------
-
-//todo: consider converting this to an event, which can be responded to in a 'player click' plugin
-fn handle_player_click_button(In(player_entity): In<Entity>, mut players: Query<&mut PlayerScore, With<PlayerId>>)
-{
-    let Ok(mut player_score) = players.get_mut(player_entity) else {
-        tracing::error!("handle player click button: unknown player entity");
-        return;
-    };
-
-    player_score.increment();
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -25,7 +11,7 @@ pub(crate) fn notify_request_rejected(
     mut sender: GameSender,
 )
 {
-    sender.send_to_client(GameMsg::RequestRejected { reason, request }, client_id.get());
+    sender.send_to_client(GameMsg::RequestRejected { reason, request }, client_id);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -37,10 +23,20 @@ pub(crate) fn handle_game_state_request(In(client_id): In<ClientId>, world: &mut
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_player_input(In((player_entity, input)): In<(Entity, PlayerInput)>, world: &mut World)
+pub(crate) fn handle_player_input(In((_player_entity, input)): In<(Entity, PlayerInput)>, _world: &mut World)
 {
     match input {
-        PlayerInput::ClickButton => world.syscall(player_entity, handle_player_click_button),
+        PlayerInput::Placeholder => (),
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[cfg(feature = "dev")]
+pub(crate) fn handle_dev_input(In((_player_entity, input)): In<(Entity, DevInput)>, world: &mut World)
+{
+    match input {
+        DevInput::EndGame => (),
     }
 }
 

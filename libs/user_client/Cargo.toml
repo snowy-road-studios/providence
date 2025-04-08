@@ -32,6 +32,7 @@ bevy_girk_utils             = { workspace = true }
 
 client_core = { path = "../client_core" }
 game_core = { path = "../game_core" }
+utils = { path = "../utils" }
 wiring_backend = { path = "../wiring_backend" }
 wiring_client_instance = { path = "../wiring_client_instance" }
 wiring_game_instance = { path = "../wiring_game_instance" }

@@ -1,122 +1,79 @@
-use std::net::{IpAddr, Ipv6Addr};
+use std::net::IpAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
-use bevy_girk_game_fw::*;
 use bevy_girk_game_hub_server::*;
 use bevy_girk_game_instance::*;
 use bevy_girk_host_server::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 use enfync::AdoptOrDefault;
-use game_core::*;
 use renet2_setup::GameServerSetupConfig;
+use utils::RootConfigs;
 use wiring_backend::*;
 use wiring_game_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_host_server_configs() -> HostServerStartupPack
+fn make_host_server_configs(configs: &RootConfigs) -> Result<HostServerStartupPack, String>
 {
     // configs
     let host_server_config = HostServerConfig {
-        ticks_per_sec: Some(15),
-        ongoing_game_purge_period_ticks: 1u64,
+        ticks_per_sec: Some(configs.get_integer("host_backend", "TICKS_PER_SEC")?),
+        ongoing_game_purge_period_ticks: configs
+            .get_integer("host_backend", "ONGOING_GAMES_PURGE_PERIOD_TICKS")?,
     };
     let lobbies_cache_config = LobbiesCacheConfig {
-        max_request_size: LOBBY_LIST_SIZE as u16,
+        max_request_size: configs.get_integer("host_frontend", "LOBBY_LIST_SIZE")?,
         lobby_checker: Box::new(ProvLobbyChecker {
-            max_lobby_players: MAX_LOBBY_PLAYERS,
-            max_lobby_watchers: MAX_LOBBY_WATCHERS,
-            min_players_to_launch: MIN_PLAYERS_TO_LAUNCH,
+            max_lobby_players: configs.get_integer("lobby", "MAX_LOBBY_PLAYERS")?,
+            min_players_to_launch: configs.get_integer("lobby", "MIN_PLAYERS_TO_LAUNCH")?,
         }),
     };
     let pending_lobbies_cache_config = PendingLobbiesConfig {
-        ack_timeout: Duration::from_millis(ACK_TIMEOUT_MILLIS),
-        start_buffer: Duration::from_secs(3),
+        ack_timeout: Duration::from_millis(configs.get_integer("host_frontend", "ACK_TIMEOUT_MILLIS")?),
+        start_buffer: Duration::from_secs(configs.get_integer("host_backend", "GAME_START_ALLOWED_DELAY_SECS")?),
     };
-    let ongoing_games_cache_config = OngoingGamesCacheConfig { expiry_duration: Duration::from_secs(100) };
-    let game_hub_disconnect_buffer_config =
-        GameHubDisconnectBufferConfig { expiry_duration: Duration::from_secs(10) };
+    let ongoing_games_cache_config = OngoingGamesCacheConfig {
+        expiry_duration: Duration::from_secs(configs.get_integer("host_backend", "ONGOING_GAME_EXPIRY_SECS")?),
+    };
+    let game_hub_disconnect_buffer_config = GameHubDisconnectBufferConfig {
+        expiry_duration: Duration::from_secs(configs.get_integer("host_backend", "GAME_HUB_DC_EXPRIY_SECS")?),
+    };
 
-    HostServerStartupPack {
+    Ok(HostServerStartupPack {
         host_server_config,
         lobbies_cache_config,
         pending_lobbies_cache_config,
         ongoing_games_cache_config,
         game_hub_disconnect_buffer_config,
-    }
+    })
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_hub_server_configs() -> GameHubServerStartupPack
+fn make_hub_server_configs(configs: &RootConfigs) -> Result<GameHubServerStartupPack, String>
 {
     let game_hub_server_config = GameHubServerConfig {
-        ticks_per_sec: Some(15),
-        initial_max_capacity: 10u16,
-        running_game_purge_period_ticks: 100u64,
+        ticks_per_sec: Some(configs.get_integer("game_hub", "TICKS_PER_SEC")?),
+        initial_max_capacity: configs.get_integer("game_hub", "INITIAL_MAX_CAPACITY")?,
+        running_game_purge_period_ticks: configs.get_integer("game_hub", "RUNNING_GAME_PURGE_PERIOD_TICKS")?,
     };
-    let pending_games_cache_config = PendingGamesCacheConfig { expiry_duration: Duration::from_secs(2) };
-    let running_games_cache_config = RunningGamesCacheConfig { expiry_duration: Duration::from_secs(100) };
+    let pending_games_cache_config = PendingGamesCacheConfig {
+        expiry_duration: Duration::from_secs(configs.get_integer("game_hub", "PENDING_GAME_EXPIRY_SECS")?),
+    };
+    let running_games_cache_config = RunningGamesCacheConfig {
+        expiry_duration: Duration::from_secs(configs.get_integer("game_hub", "RUNNING_GAME_EXPIRY_SECS")?),
+    };
 
-    GameHubServerStartupPack {
+    Ok(GameHubServerStartupPack {
         game_hub_server_config,
         pending_games_cache_config,
         running_games_cache_config,
-    }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn make_game_configs(
-    local_ip: Option<IpAddr>,
-    proxy_ip: Option<IpAddr>,
-    game_ticks_per_sec: u32,
-    game_num_ticks: u32,
-    ws_domain: Option<String>,
-    wss_certs: Option<(PathBuf, PathBuf)>,
-) -> ProvGameFactoryConfig
-{
-    // versioning
-    //todo: use hasher directly?
-    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-
-    // config
-    let max_init_ticks = game_ticks_per_sec * 5;
-    let game_prep_ticks = 0;
-    let max_game_over_ticks = game_ticks_per_sec * 3;
-
-    // server setup config
-    let server_setup_config = GameServerSetupConfig {
-        protocol_id,
-        expire_secs: 10u64,
-        timeout_secs: 5i32,
-        server_ip: local_ip.unwrap_or(Ipv6Addr::LOCALHOST.into()),
-        native_port: 0,
-        wasm_wt_port: 0,
-        wasm_ws_port: 0,
-        proxy_ip,
-        ws_domain,
-        wss_certs,
-    };
-
-    // game framework config
-    let game_fw_config = GameFwConfig::new(game_ticks_per_sec, max_init_ticks, max_game_over_ticks);
-
-    // game duration config
-    let duration_config = GameDurationConfig::new(game_prep_ticks, game_num_ticks);
-
-    // game factory config
-    ProvGameFactoryConfig {
-        server_setup_config,
-        game_fw_config,
-        duration_config,
-        resend_time: Duration::from_millis(300),
-    }
+    })
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -152,11 +109,11 @@ fn make_test_host_server(
         bevy_simplenet::Authenticator::None,
         bevy_simplenet::ServerConfig::default(),
     );
-    let host_hub_url = host_hub_server.url();
+    let hub_server_url = host_hub_server.url();
 
     (
         make_host_server(configs, host_hub_server, host_user_server),
-        host_hub_url,
+        hub_server_url,
         host_user_url,
     )
 }
@@ -206,6 +163,20 @@ fn make_test_game_hub_server(
 
 //-------------------------------------------------------------------------------------------------------------------
 
+fn config_paths() -> Vec<PathBuf>
+{
+    let mut paths = Vec::default();
+    paths.push("/backend/game_hub.toml".into());
+    paths.push("/backend/host_backend.toml".into());
+    paths.push("/frontend/host_frontend.toml".into());
+    paths.push("/frontend/lobby.toml".into());
+    paths.push("/game/game.toml".into());
+
+    paths
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 //todo: include log level
 #[derive(Parser, Debug)]
 struct BackendCli
@@ -214,6 +185,9 @@ struct BackendCli
     /// Requires '--game-instance'.
     #[arg(long)]
     game_instance: Option<String>,
+    /// Specify the directory where config files are stored.
+    #[arg(long)]
+    config_dir: Option<String>,
     /// Address of user-host server.
     #[arg(long)]
     host_addr: Option<String>,
@@ -236,9 +210,62 @@ struct BackendCli
     wss_certs_privkey: Option<String>,
 }
 
+impl BackendCli
+{
+    fn extract(self) -> BackendCliResolved
+    {
+        let game_instance_path = self
+            .game_instance
+            .unwrap_or_else(|| DEFAULT_GAME_INSTANCE_PATH.into());
+        let config_dir: PathBuf = self
+            .config_dir
+            .unwrap_or_else(|| DEFAULT_CONFIG_DIR.into())
+            .into();
+        let host_addr = self.host_addr.unwrap_or_else(|| "127.0.0.1:48888".into());
+
+        let wss_certs = match (self.wss_certs, self.wss_certs_privkey) {
+            (Some(certs), Some(privkey)) => Some((PathBuf::from(certs), PathBuf::from(privkey))),
+            (None, None) => None,
+            (Some(_), None) => {
+                tracing::error!("wss_certs arg found but wss_certs_privkey is missing");
+                None
+            }
+            (None, Some(_)) => {
+                tracing::error!("wss_certs_privkey arg found but wss_certs is missing");
+                None
+            }
+        };
+
+        BackendCliResolved {
+            game_instance_path,
+            config_dir,
+            host_addr,
+            local_ip: self.local_ip,
+            proxy_ip: self.proxy_ip,
+            ws_domain: self.ws_domain,
+            wss_certs,
+        }
+    }
+}
+
+struct BackendCliResolved
+{
+    game_instance_path: String,
+    config_dir: PathBuf,
+    host_addr: String,
+    local_ip: Option<IpAddr>,
+    proxy_ip: Option<IpAddr>,
+    ws_domain: Option<String>,
+    wss_certs: Option<(PathBuf, PathBuf)>,
+}
+
 //-------------------------------------------------------------------------------------------------------------------
 
-const GAME_INSTANCE_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
+const DEFAULT_GAME_INSTANCE_PATH: &'static str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
+const DEFAULT_CONFIG_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../config");
+#[cfg(feature = "dev")]
+const CONFIGS_OVERRIDE_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/config");
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -268,54 +295,43 @@ fn main()
     // env
     let args = BackendCli::parse();
     tracing::info!(?args);
+    let args = args.extract();
 
-    // unwrap args
-    let game_instance_path = args
-        .game_instance
-        .unwrap_or_else(|| String::from(GAME_INSTANCE_PATH));
-    let host_addr = args.host_addr.unwrap_or_else(|| "127.0.0.1:48888".into());
-
-    let wss_certs = match (args.wss_certs, args.wss_certs_privkey) {
-        (Some(certs), Some(privkey)) => Some((PathBuf::from(certs), PathBuf::from(privkey))),
-        (None, None) => None,
-        (Some(_), None) => {
-            tracing::error!("wss_certs arg found but wss_certs_privkey is missing");
-            None
-        }
-        (None, Some(_)) => {
-            tracing::error!("wss_certs_privkey arg found but wss_certs is missing");
-            None
-        }
-    };
-    let maybe_rustls = if let Some((certs, privkey)) = &wss_certs {
+    // prep rustls
+    let maybe_rustls = if let Some((certs, privkey)) = &args.wss_certs {
         GameServerSetupConfig::get_rustls_server_config(certs, privkey).ok()
     } else {
         None
     };
 
-    // launch host server
-    let (mut host_server, host_hub_url, host_user_url) =
-        make_test_host_server(host_addr, maybe_rustls, make_host_server_configs());
-    tracing::info!("host-user server running at {}", host_user_url.as_str());
+    // extract configs
+    let mut configs = RootConfigs::default();
+    configs.read(args.config_dir, config_paths()).unwrap();
+    #[cfg(feature = "dev")]
+    configs
+        .read(CONFIGS_OVERRIDE_DIR.into(), config_paths())
+        .unwrap();
 
-    // launch game hub server attached to host server
-    let game_ticks_per_sec = 20;
-    let game_num_ticks = 20 * 30;
+    // launch host server
+    let (mut host_server, hub_server_url, host_user_url) = make_test_host_server(
+        args.host_addr,
+        maybe_rustls,
+        make_host_server_configs(&configs).unwrap(),
+    );
+    tracing::info!("host-user server running at {}", host_user_url.as_str());
 
     // run the servers
     std::thread::spawn(move || {
+        // launch game hub server attached to host server
+        let startup_pack = make_hub_server_configs(&configs).unwrap();
+        let game_factory_config =
+            make_prov_game_configs(args.local_ip, args.proxy_ip, args.ws_domain, args.wss_certs, &configs)
+                .unwrap();
         let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
-            game_instance_path,
-            host_hub_url,
-            make_hub_server_configs(),
-            make_game_configs(
-                args.local_ip,
-                args.proxy_ip,
-                game_ticks_per_sec,
-                game_num_ticks,
-                args.ws_domain.clone(),
-                wss_certs.clone(),
-            ),
+            args.game_instance_path,
+            hub_server_url,
+            startup_pack,
+            game_factory_config,
         );
         hub_server.run()
     });

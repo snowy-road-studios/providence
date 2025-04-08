@@ -1,5 +1,3 @@
-use bevy_girk_game_fw::*;
-use bevy_replicon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -12,8 +10,6 @@ pub struct ProvPlayerReport
 {
     /// Client id within the game.
     pub client_id: ClientId,
-    /// Player score during the game.
-    pub score: PlayerScore,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -22,8 +18,8 @@ pub struct ProvPlayerReport
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ProvGameOverReport
 {
-    /// The last game tick that elapsed before this report was created.
-    pub final_game_tick: Tick,
+    /// How long the game took.
+    pub game_duration_ms: u128,
 
     /// Each player's individual report.
     pub player_reports: Vec<ProvPlayerReport>,

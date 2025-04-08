@@ -7,6 +7,9 @@ edition.workspace = true
 test    = false
 doctest = false
 
+[features]
+dev = ["game_core/dev"]
+
 [dependencies]
 bevy = { workspace = true }
 bevy_replicon = { workspace = true }
@@ -21,6 +24,7 @@ bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
 game_core = { path = "../game_core" }
+utils = { path = "../utils" }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 bevy_girk_wiring_server = { workspace = true, features = [

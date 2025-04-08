@@ -23,6 +23,9 @@ struct GameClientCli
     /// GameStartInfo
     #[arg(short = 'S', value_parser = parse_json::<GameStartInfo>)]
     start_info: Option<GameStartInfo>,
+    /// renet2 resend time in milliseconds.
+    #[arg(short = 'R', value_parser = parse_json::<u64>)]
+    renet2_resend_time_millis: u64,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -75,7 +78,10 @@ fn main()
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let factory = ProvClientFactory { protocol_id, resend_time: Duration::from_millis(100) };
+    let factory = ProvClientFactory {
+        protocol_id,
+        resend_time: Duration::from_millis(args.renet2_resend_time_millis),
+    };
 
     let mut app = App::new();
     app.add_plugins(ClientInstancePlugin::new(factory, None))

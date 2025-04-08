@@ -1,4 +1,5 @@
-use bevy_girk_game_fw::*;
+use std::time::Duration;
+
 use serde::{Deserialize, Serialize};
 
 use crate::*;
@@ -6,39 +7,50 @@ use crate::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Configuration details for game duration.
+/*
+TODO:
+server
+- send time remaining in current phase every 5 seconds in reliable unordered messages
+    - also on client connect
+    - also on phase change
+- store current round as resource
+    - send current round as message
+        - on phase change
+        - on client connect
+        - TODO: replicate this resource
+
+client
+- store phase timer as resource
+- update phase timer when phase timer message received
+*/
 #[derive(Eq, PartialEq, Hash, Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct GameDurationConfig
 {
-    /// Number of ticks that should elapse in [GameState::Prep] before switching [GameState::Prep] ->
-    /// [GameState::Play].
-    prep_ticks: u32,
-    /// Number of ticks that should elapse in [GameState::Play] before switching [GameState::Play] ->
-    /// [GameState::GameOver].
-    game_ticks: u32,
-    // The first 'game over' tick will occur after 'prep_ticks + game_ticks' ticks have elapsed.
+    /// Duration of tile selection phase.
+    pub tile_select_duration_ms: u64,
+    /// Duration of each game round.
+    pub round_duration_ms: u64,
+    /// Number of rounds in the game.
+    pub num_rounds: u32,
 }
 
 impl GameDurationConfig
 {
-    pub fn new(prep_ticks: u32, game_ticks: u32) -> GameDurationConfig
-    {
-        GameDurationConfig { prep_ticks, game_ticks }
-    }
-
-    pub fn expected_state(&self, game_tick: Tick) -> GameState
+    pub fn expected_state(&self, game_time: Duration) -> GameState
     {
         // prep
-        if *game_tick < self.prep_ticks {
-            return GameState::Prep;
+        if game_time.as_millis() <= self.tile_select_duration_ms as u128 {
+            return GameState::TileSelect;
         }
 
         // play
-        if *game_tick < (self.prep_ticks + self.game_ticks) {
+        let total_game_duration = self.tile_select_duration_ms + self.round_duration_ms * (self.num_rounds as u64);
+        if game_time.as_millis() <= total_game_duration as u128 {
             return GameState::Play;
         }
 
         // game over
-        return GameState::GameOver;
+        GameState::End
     }
 }
 

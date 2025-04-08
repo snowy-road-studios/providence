@@ -1,5 +1,4 @@
 use bevy::prelude::*;
-use bevy_replicon::prelude::*;
 use game_core::*;
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +8,7 @@ use serde::{Deserialize, Serialize};
 pub enum ClientType
 {
     Player,
+    /// Currently not supported.
     Watcher,
 }
 

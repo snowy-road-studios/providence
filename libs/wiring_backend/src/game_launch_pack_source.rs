@@ -2,11 +2,11 @@ use std::collections::VecDeque;
 
 use bevy_girk_backend_public::*;
 use bevy_girk_game_instance::*;
-use bevy_replicon::prelude::*;
 #[cfg(not(target_family = "wasm"))]
 use rand::seq::SliceRandom;
 #[cfg(not(target_family = "wasm"))]
 use rand::thread_rng;
+use renet2::ClientId;
 use renet2_setup::ConnectionType;
 use wiring_game_instance::*;
 
@@ -30,16 +30,7 @@ fn get_protocol_id() -> u64
 
 fn make_player_init_data(connection: ConnectionType, user_id: u128, client_id: ClientId) -> ClientGameInit
 {
-    let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id.get()) };
-
-    ClientGameInit { connection, user_id, client_id, client_type }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn make_watcher_init_data(connection: ConnectionType, user_id: u128, client_id: ClientId) -> ClientGameInit
-{
-    let client_type = ClientTypeInfo::Watcher;
+    let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id) };
 
     ClientGameInit { connection, user_id, client_id, client_type }
 }
@@ -69,7 +60,6 @@ pub fn get_launch_pack(
 {
     // extract players/watchers from lobby contents
     let num_players = lobby_contents.players.len();
-    let num_watchers = lobby_contents.watchers.len();
 
     // shuffle the game participants
     #[cfg(target_family = "wasm")]
@@ -77,27 +67,18 @@ pub fn get_launch_pack(
         if num_players != 1 {
             panic!("only single-player game instances are allowed on WASM");
         }
-        if num_watchers != 0 {
-            panic!("only single-player game instances are allowed on WASM");
-        }
     }
     #[cfg(not(target_family = "wasm"))]
     {
         lobby_contents.players.shuffle(&mut thread_rng());
-        lobby_contents.watchers.shuffle(&mut thread_rng());
     }
 
     // make init data for the clients
-    let mut client_init_data = Vec::with_capacity(num_players + num_watchers);
+    let mut client_init_data = Vec::with_capacity(num_players);
 
     for (idx, (connection, player_user_id)) in lobby_contents.players.iter().enumerate() {
-        let client_id = ClientId::new(idx as u64);
+        let client_id = idx as u64;
         client_init_data.push(make_player_init_data(*connection, *player_user_id, client_id));
-    }
-
-    for (idx, (connection, watcher_user_id)) in lobby_contents.watchers.iter().enumerate() {
-        let client_id = ClientId::new((idx + num_players) as u64);
-        client_init_data.push(make_watcher_init_data(*connection, *watcher_user_id, client_id));
     }
 
     // launch pack

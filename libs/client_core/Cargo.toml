@@ -7,6 +7,9 @@ edition.workspace = true
 test    = false
 doctest = false
 
+[features]
+dev = []
+
 [dependencies]
 bevy           = { workspace = true }
 bevy_cobweb    = { workspace = true }

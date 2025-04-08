@@ -13,12 +13,12 @@ pub enum ClientSet
 {
     /// Runs initialization logic.
     Init,
-    /// Runs in game mode 'prep' (but not when initializing).
-    Prep,
+    /// Runs in game mode 'tile select' (but not when initializing).
+    TileSelect,
     /// Runs in game mode 'play' (but not when initializing).
     Play,
-    /// Runs in game mode 'game over' (but not when initializing).
-    GameOver,
+    /// Runs in game mode 'end' (but not when initializing).
+    End,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -47,29 +47,33 @@ impl Plugin for ClientSetsPlugin
             Update,
             ClientSet::Init
                 .run_if(client_is_initializing)
-                .run_if(in_state(ClientState::Init)),
+                .run_if(in_state(ClientState::Init))
+                .in_set(ClientLogicSet::Update),
         )
         .configure_sets(
             Update,
-            ClientSet::Prep
+            ClientSet::TileSelect
                 .run_if(in_state(ClientFwState::Game))
-                .run_if(in_state(ClientState::Prep)),
+                .run_if(in_state(ClientState::TileSelect))
+                .in_set(ClientLogicSet::Update),
         )
         .configure_sets(
             Update,
             ClientSet::Play
                 .run_if(in_state(ClientFwState::Game))
-                .run_if(in_state(ClientState::Play)),
+                .run_if(in_state(ClientState::Play))
+                .in_set(ClientLogicSet::Update),
         )
         .configure_sets(
             Update,
-            ClientSet::GameOver
+            ClientSet::End
                 .run_if(in_state(ClientFwState::End))
-                .run_if(in_state(ClientState::GameOver)),
+                .run_if(in_state(ClientState::End))
+                .in_set(ClientLogicSet::Update),
         )
         .configure_sets(
             Update,
-            (ClientLogicSet::Admin, ClientLogicSet::Update, ClientLogicSet::End)
+            (ClientLogicSet::Admin, ClientLogicSet::Update)
                 .chain()
                 .run_if(in_state(ClientAppState::Game)),
         );
