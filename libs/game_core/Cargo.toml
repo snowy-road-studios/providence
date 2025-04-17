@@ -8,6 +8,7 @@ test    = false
 doctest = false
 
 [features]
+default = ["dev"]
 # Enables handling of dev inputs from clients.
 dev = []
 

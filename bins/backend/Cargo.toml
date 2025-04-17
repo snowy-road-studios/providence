@@ -9,7 +9,8 @@ test    = false
 doctest = false
 
 [features]
-dev = ["bevy/dynamic_linking"]
+default = ["dev"]
+dev = ["bevy/dynamic_linking", "game_core/dev", "wiring_game_instance/dev"]
 
 [dependencies]
 axum-server        = { workspace = true, features = ["tls-rustls"] }
@@ -34,7 +35,7 @@ bevy_girk_host_server     = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 bevy_girk_wiring_server   = { workspace = true }
 
-game_core            = { path = "../../libs/game_core" }
-utils                = { path = "../../libs/utils" }
-wiring_backend       = { path = "../../libs/wiring_backend" }
-wiring_game_instance = { path = "../../libs/wiring_game_instance" }
+game_core            = { path = "../../libs/game_core", default-features = false }
+utils                = { path = "../../libs/utils", default-features = false }
+wiring_backend       = { path = "../../libs/wiring_backend", default-features = false }
+wiring_game_instance = { path = "../../libs/wiring_game_instance", default-features = false }

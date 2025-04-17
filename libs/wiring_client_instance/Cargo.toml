@@ -8,6 +8,7 @@ test    = false
 doctest = false
 
 [features]
+default = ["dev"]
 dev = ["game_core/dev", "client_core/dev", "client_skin/dev"]
 
 [dependencies]
@@ -25,7 +26,7 @@ bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 bevy_girk_wiring_client   = { workspace = true, features = ["memory_transport"] }
 
-client_core          = { path = "../client_core" }
-client_skin          = { path = "../client_skin" }
-game_core            = { path = "../game_core" }
-wiring_game_instance = { path = "../wiring_game_instance" }
+client_core          = { path = "../client_core", default-features = false }
+client_skin          = { path = "../client_skin", default-features = false }
+game_core            = { path = "../game_core", default-features = false }
+wiring_game_instance = { path = "../wiring_game_instance", default-features = false }

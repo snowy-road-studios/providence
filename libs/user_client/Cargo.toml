@@ -8,6 +8,7 @@ test    = false
 doctest = false
 
 [features]
+default = ["dev"]
 dev = ["bevy_cobweb_ui/dev"]
 
 [dependencies]
@@ -30,9 +31,9 @@ bevy_girk_game_fw           = { workspace = true }
 bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
 
-client_core = { path = "../client_core" }
-game_core = { path = "../game_core" }
-utils = { path = "../utils" }
-wiring_backend = { path = "../wiring_backend" }
-wiring_client_instance = { path = "../wiring_client_instance" }
-wiring_game_instance = { path = "../wiring_game_instance" }
+client_core = { path = "../client_core", default-features = false }
+game_core = { path = "../game_core", default-features = false }
+utils = { path = "../utils", default-features = false }
+wiring_backend = { path = "../wiring_backend", default-features = false }
+wiring_client_instance = { path = "../wiring_client_instance", default-features = false }
+wiring_game_instance = { path = "../wiring_game_instance", default-features = false }

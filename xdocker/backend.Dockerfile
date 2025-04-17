@@ -18,16 +18,16 @@ COPY Cargo.toml Cargo.lock ./
 COPY ./libs ./libs
 
 RUN apk add --no-cache musl-dev
-RUN cargo build --profile release-unoptimized -p game_instance
-RUN cargo build --profile release-unoptimized -p backend
+RUN cargo build --no-default-features --profile release-unoptimized -p game_instance
+RUN cargo build --no-default-features --profile release-unoptimized -p backend
 
 # build executables
 COPY ./bins/game_instance/src ./bins/game_instance/src
 COPY ./bins/backend/src ./bins/backend/src
 RUN touch ./bins/game_instance/src/main.rs  # break cargo cache
 RUN touch ./bins/backend/src/main.rs  # break cargo cache
-RUN cargo build --profile release-unoptimized -p game_instance
-RUN cargo build --profile release-unoptimized -p backend
+RUN cargo build --no-default-features --profile release-unoptimized -p game_instance
+RUN cargo build --no-default-features --profile release-unoptimized -p backend
 
 
 ## Stage: save executables

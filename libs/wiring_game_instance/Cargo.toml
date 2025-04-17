@@ -8,6 +8,7 @@ test    = false
 doctest = false
 
 [features]
+default = ["dev"]
 dev = ["game_core/dev"]
 
 [dependencies]
@@ -23,8 +24,8 @@ bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
-game_core = { path = "../game_core" }
-utils = { path = "../utils" }
+game_core = { path = "../game_core", default-features = false }
+utils = { path = "../utils", default-features = false }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 bevy_girk_wiring_server = { workspace = true, features = [

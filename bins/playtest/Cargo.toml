@@ -9,6 +9,7 @@ test    = false
 doctest = false
 
 [features]
+default = ["dev"]
 dev = ["bevy/dynamic_linking", "wiring_game_instance/dev", "game_core/dev"]
 
 [dependencies]
@@ -27,7 +28,7 @@ bevy_girk_game_fw = { workspace = true }
 bevy_girk_game_instance = { workspace = true, features = ["process"] }
 bevy_girk_utils = { workspace = true }
 
-game_core            = { path = "../../libs/game_core" }
-utils                = { path = "../../libs/utils" }
-wiring_backend       = { path = "../../libs/wiring_backend" }
-wiring_game_instance = { path = "../../libs/wiring_game_instance" }
+game_core            = { path = "../../libs/game_core", default-features = false }
+utils                = { path = "../../libs/utils", default-features = false }
+wiring_backend       = { path = "../../libs/wiring_backend", default-features = false }
+wiring_game_instance = { path = "../../libs/wiring_game_instance", default-features = false }
