@@ -13,7 +13,7 @@ use crate::*;
 pub struct ProvGameInitializer
 {
     /// Game context.
-    pub game_context: ProvGameContext,
+    pub game_context: GameContext,
     /// Player states.
     pub players: HashMap<ClientId, PlayerState>,
 }

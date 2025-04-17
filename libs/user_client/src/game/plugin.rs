@@ -5,9 +5,7 @@ use bevy::time::common_conditions::on_timer;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::{ClientAppState, ClientFwConfig};
-use bevy_girk_client_instance::ClientInstanceCommand;
 use bevy_girk_game_fw::GameOverReport;
-use client_core::ClientState;
 use game::{handle_token_req, ClientInstanceReportPlugin, ClientStarterPlugin, LocalGamePlugin};
 use game_core::ProvGameOverReport;
 
@@ -30,13 +28,6 @@ fn setup_game_tag_entities(mut c: Commands)
         .r(|mut need_token: ResMut<NeedTokenRequest>| {
             need_token.0 = true;
         });
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn end_client_instance(mut c: Commands)
-{
-    c.queue(ClientInstanceCommand::End);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -99,7 +90,6 @@ impl Plugin for GamePlugin
             .add_plugins(LocalGamePlugin)
             .init_resource::<NeedTokenRequest>()
             .add_systems(PreStartup, setup_game_tag_entities)
-            .add_systems(Update, end_client_instance.run_if(in_state(ClientState::End)))
             .add_reactor(broadcast::<GameOverReport>(), log_game_over_report)
             .add_systems(
                 Last,

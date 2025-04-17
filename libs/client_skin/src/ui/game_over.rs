@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
+use bevy_girk_client_instance::ClientInstanceCommand;
 use client_core::*;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -10,6 +11,10 @@ fn game_over_screen(mut c: Commands, mut s: SceneBuilder)
     let scene = ("ui.skin", "gameover");
     c.ui_root().spawn_scene(scene, &mut s, |h| {
         h.insert(StateScoped(ClientAppState::Game));
+
+        h.get("end_button").on_pressed(|mut c: Commands| {
+            c.queue(ClientInstanceCommand::End);
+        });
     });
 }
 

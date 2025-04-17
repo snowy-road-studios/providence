@@ -21,8 +21,9 @@ iyes_progress   = { workspace = true }
 tracing         = { workspace = true }
 
 bevy_girk_client_fw = { workspace = true }
-bevy_girk_game_fw   = { workspace = true }
-bevy_girk_utils     = { workspace = true }
+bevy_girk_client_instance = { workspace = true }
+bevy_girk_game_fw = { workspace = true }
+bevy_girk_utils = { workspace = true }
 
 client_core = { path = "../client_core" }
 game_core   = { path = "../game_core" }

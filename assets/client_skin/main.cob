@@ -40,9 +40,23 @@ $COLOR_GAME_SECONDARY_BUTTONS_TEXT_DISABLED = #AAAAAA
             BackgroundColor($COLOR_LOADBAR)
 
 "gameover"
+    GlobalZIndex($const::ZINDEX_GAMEOVER)
     FlexNode{width:100vw height:100vh flex_direction:Column justify_main:Center justify_cross:Center}
     BackgroundColor($COLOR_GAMEOVER)
 
     "text"
         TextLine{text:"GAME OVER" size:45}
         TextLineColor(#FFFFFF)
+
+    "end_button"
+        FlexNode{justify_main:Center justify_cross:Center}
+        Splat<Border>(1px)
+        BorderColor(#000000)
+        Responsive<BackgroundColor>{
+            idle:#00000000 hover:#55888888 press:#77888888
+        }
+
+        "text"
+            FlexNode{margin:{top:5px bottom:5px left:7px right:7px}}
+            TextLine{text: "Exit" size:20}
+            TextLineColor(#FFFFFF)

@@ -9,12 +9,16 @@ use crate::*;
 
 /// Check the game duration conditions and update the game state.
 fn update_game_state(
-    game_ctx: Res<ProvGameContext>,
+    game_ctx: Res<GameContext>,
     game_time: Res<GameTime>,
     current_game_state: Res<State<GameState>>,
     mut next_game_state: ResMut<NextState<GameState>>,
 )
 {
+    if **current_game_state == GameState::End {
+        return;
+    }
+
     // get expected state based on elapsed ticks
     let duration_config = game_ctx.duration_config();
     let new_game_state = duration_config.expected_state(game_time.elapsed());
@@ -29,7 +33,13 @@ fn update_game_state(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn set_game_end_flag(game_time: Res<GameTime>, players: Query<&PlayerId>, mut game_end_flag: ResMut<GameEndFlag>)
+fn set_game_end_flag(
+    ctx: Res<GameContext>,
+    game_time: Res<GameTime>,
+    round: Res<GameRound>,
+    players: Query<&PlayerId>,
+    mut game_end_flag: ResMut<GameEndFlag>,
+)
 {
     // collect player reports
     let player_reports = players
@@ -39,7 +49,9 @@ fn set_game_end_flag(game_time: Res<GameTime>, players: Query<&PlayerId>, mut ga
 
     // build game over report
     let game_over_report = ProvGameOverReport {
+        game_id: ctx.game_id(),
         game_duration_ms: game_time.elapsed().as_millis(),
+        rounds: **round,
         player_reports,
     };
 

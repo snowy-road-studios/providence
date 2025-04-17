@@ -52,6 +52,34 @@ impl GameDurationConfig
         // game over
         GameState::End
     }
+
+    pub fn select_remaining_ms(&self, game_time: Duration) -> Option<u128>
+    {
+        if game_time.as_millis() > self.tile_select_duration_ms as u128 {
+            return None;
+        }
+
+        Some(self.tile_select_duration_ms as u128 - game_time.as_millis())
+    }
+
+    pub fn round_and_remaining_ms(&self, game_time: Duration) -> Option<(u32, u128)>
+    {
+        if game_time.as_millis() <= self.tile_select_duration_ms as u128 {
+            return None;
+        }
+        let play_time_ms = game_time
+            .as_millis()
+            .saturating_sub(self.tile_select_duration_ms as u128);
+        let round_time_ms = self.round_duration_ms.max(1) as u128;
+        let rounds_complete = play_time_ms / round_time_ms;
+        let remaining_ms = play_time_ms % round_time_ms;
+
+        if rounds_complete as u32 == self.num_rounds {
+            return Some((self.num_rounds, 0));
+        }
+
+        Some((rounds_complete as u32 + 1, remaining_ms))
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

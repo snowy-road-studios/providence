@@ -2341,6 +2341,7 @@ dependencies = [
  "game_core",
  "serde",
  "tracing",
+ "wasm-timer",
  "wiring_game_instance",
 ]
 
@@ -2353,6 +2354,7 @@ dependencies = [
  "bevy_cobweb_ui",
  "bevy_framepace",
  "bevy_girk_client_fw",
+ "bevy_girk_client_instance",
  "bevy_girk_game_fw",
  "bevy_girk_utils",
  "bevy_renet2",

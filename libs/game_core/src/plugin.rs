@@ -18,9 +18,11 @@ impl Plugin for GamePlugin
             .add_plugins(GameSetsPlugin)
             .add_plugins(GameSetupPlugin)
             .add_plugins(GameStatePlugin)
+            .add_plugins(GameRoundPlugin)
+            .add_plugins(ClientConnectPlugin)
             .configure_sets(
                 Update,
-                (TimeUpdateSet, GameStateUpdateSet)
+                (TimeUpdateSet, GameStateUpdateSet, RoundUpdateSet)
                     .chain()
                     .in_set(GameLogicSet::Admin),
             );

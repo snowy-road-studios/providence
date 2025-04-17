@@ -27,6 +27,15 @@ pub enum GameMsg
         request: ClientRequest,
     },
     CurrentGameState(GameState),
+    TileSelectInfo
+    {
+        remaining_ms: u128,
+    },
+    RoundInfo
+    {
+        round: u32,
+        remaining_ms: u128,
+    },
 }
 
 impl IntoChannel for GameMsg
@@ -36,6 +45,8 @@ impl IntoChannel for GameMsg
         match &self {
             Self::RequestRejected { .. } => SendUnordered.into(),
             Self::CurrentGameState(_) => SendOrdered.into(),
+            Self::TileSelectInfo { .. } => SendOrdered.into(),
+            Self::RoundInfo { .. } => SendOrdered.into(),
         }
     }
 }

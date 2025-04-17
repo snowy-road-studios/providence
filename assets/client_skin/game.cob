@@ -22,7 +22,7 @@ ui.skin as _
 #scenes
 "game"
     FlexNode{width:100vw height:100vh flex_direction:Column justify_main:FlexStart}
-    BackgroundColor($COLOR_GAME_BG)
+    Picking::Ignore
 
     "header"
         FlexNode{width:100% height:25px flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
@@ -33,7 +33,7 @@ ui.skin as _
             "name"
                 TextLine{size:25}
 
-        "shim"
+        ""
             FlexNode{flex_grow:1}
 
         "fps"

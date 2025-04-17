@@ -23,8 +23,9 @@ impl Plugin for ClientCorePlugin
         app.add_plugins(GameReplicationPlugin)
             .add_plugins(ClientSetsPlugin)
             .add_plugins(ClientSetupPlugin)
-            // Note: watcher clients re-use the player skin.
             .add_plugins(PlayerInputPlugin)
+            .add_plugins(RoundsPlugin)
+            .add_plugins(GameEndPlugin)
             .add_systems(OnEnter(ClientInitState::Done), request_game_state)
             .configure_sets(Update, PlayerInputSet.in_set(ClientLogicSet::Admin));
     }

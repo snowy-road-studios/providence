@@ -31,13 +31,3 @@ pub(crate) fn handle_player_input(In((_player_entity, input)): In<(Entity, Playe
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-
-#[cfg(feature = "dev")]
-pub(crate) fn handle_dev_input(In((_player_entity, input)): In<(Entity, DevInput)>, world: &mut World)
-{
-    match input {
-        DevInput::EndGame => (),
-    }
-}
-
-//-------------------------------------------------------------------------------------------------------------------

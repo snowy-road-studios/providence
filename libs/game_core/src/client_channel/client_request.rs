@@ -37,7 +37,7 @@ pub enum DevInput
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub enum ClientRequest
 {
-    /// Request the current game mode.
+    /// Request the current game state.
     GetGameState,
     /// Player input.
     PlayerInput(PlayerInput),

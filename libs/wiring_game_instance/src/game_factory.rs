@@ -86,7 +86,7 @@ fn prepare_game_startup(
         #[cfg(not(target_family = "wasm"))]
         bevy_girk_utils::gen_rand128()
     };
-    let game_context = ProvGameContext::new(seed, duration_config);
+    let game_context = GameContext::new(game_id, seed, duration_config);
 
     Ok(GameStartupHelper {
         client_set: GameFwClients::new(client_set),

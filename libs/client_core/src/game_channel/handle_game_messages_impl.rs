@@ -39,10 +39,24 @@ fn update_client_state(
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Handle current game state.
-pub(crate) fn handle_game_state(In(current_game_state): In<GameState>, world: &mut World)
+pub(super) fn handle_game_state(In(current_game_state): In<GameState>, world: &mut World)
 {
     world.syscall(current_game_state, update_client_state);
     world.syscall((), apply_state_transitions);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(super) fn handle_tile_select_info(In(remaining_ms): In<u128>, mut select_timer: ResMut<TileSelectTimer>)
+{
+    select_timer.set(remaining_ms);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(super) fn handle_round_info(In((round, remaining_ms)): In<(u32, u128)>, mut round_timer: ResMut<RoundTimer>)
+{
+    round_timer.set(round, remaining_ms);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
