@@ -21,13 +21,17 @@ impl RootConfigs
                 .as_path()
                 .file_name()
                 .and_then(|f| f.to_str())
+                .and_then(|f| {
+                    let (filename, _) = f.split_once(".toml")?;
+                    Some(filename)
+                })
                 .ok_or_else(|| format!("failed reading config file \"{path:?}\"; failed extracting file name"))?;
             let ctx_map: &mut HashMap<String, toml::value::Value> = self.inner.entry(context.into()).or_default();
             let data = std::fs::read_to_string(root_path.join(&path))
-                .map_err(|e| format!("failed reading config file \"{path:?}\"; io err: {e:?}"))?;
-            let vals = data
-                .parse::<toml::Table>()
-                .map_err(|e| format!("failed parsing config file \"{path:?}\"; parse err: {e:?}"))?;
+                .map_err(|e| format!("failed reading config file {:?}; io err: {e:?}", root_path.join(&path)))?;
+            let vals = data.parse::<toml::Table>().map_err(|e| {
+                format!("failed parsing config file {:?}; parse err: {e:?}", root_path.join(&path))
+            })?;
             for (key, value) in vals.iter() {
                 if let Some(prev_value) = ctx_map.get(key) {
                     tracing::debug!("overwriting config {context}::{}; prev={prev_value:?}, new={value:?}", key.as_str());

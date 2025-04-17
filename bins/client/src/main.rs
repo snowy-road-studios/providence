@@ -32,11 +32,11 @@ fn timer_configs(configs: &RootConfigs) -> Result<TimerConfigs, String>
 fn config_paths() -> Vec<PathBuf>
 {
     let mut paths = Vec::default();
-    paths.push("/frontend/host_frontend.toml".into());
-    paths.push("/frontend/lobby.toml".into());
-    paths.push("/game/game.toml".into());
-    paths.push("/game_client/game_client.toml".into());
-    paths.push("/user_client/user_client.toml".into());
+    paths.push("frontend/host_frontend.toml".into());
+    paths.push("frontend/lobby.toml".into());
+    paths.push("game/game.toml".into());
+    paths.push("game_client/game_client.toml".into());
+    paths.push("user_client/user_client.toml".into());
 
     paths
 }

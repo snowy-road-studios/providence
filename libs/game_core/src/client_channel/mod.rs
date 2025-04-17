@@ -10,4 +10,4 @@ pub use game_msg::*;
 pub(crate) use handle_client_requests::*;
 pub(self) use handle_client_requests_impl::*;
 #[cfg(feature = "dev")]
-pub(self) use handle_client_requests_impl::*;
+pub(self) use handle_dev_requests_impl::*;

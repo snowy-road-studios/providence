@@ -15,8 +15,8 @@ use wiring_game_instance::*;
 fn config_paths() -> Vec<PathBuf>
 {
     let mut paths = Vec::default();
-    paths.push("/game/game.toml".into());
-    paths.push("/game_client/game_client.toml".into());
+    paths.push("game/game.toml".into());
+    paths.push("game_client/game_client.toml".into());
 
     paths
 }

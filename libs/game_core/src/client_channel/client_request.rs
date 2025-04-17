@@ -53,7 +53,7 @@ impl IntoChannel for ClientRequest
             Self::GetGameState => SendOrdered.into(),
             Self::PlayerInput(input) => input.into_event_type(),
             #[cfg(feature = "dev")]
-            Self::DevInput(input) => SendOrdered.into(),
+            Self::DevInput(_) => SendOrdered.into(),
         }
     }
 }

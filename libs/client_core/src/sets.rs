@@ -45,6 +45,12 @@ impl Plugin for ClientSetsPlugin
     {
         app.configure_sets(
             Update,
+            (ClientLogicSet::Admin, ClientLogicSet::Update, ClientLogicSet::End)
+                .chain()
+                .run_if(in_state(ClientAppState::Game)),
+        )
+        .configure_sets(
+            Update,
             ClientSet::Init
                 .run_if(client_is_initializing)
                 .run_if(in_state(ClientState::Init))
@@ -54,28 +60,19 @@ impl Plugin for ClientSetsPlugin
             Update,
             ClientSet::TileSelect
                 .run_if(in_state(ClientFwState::Game))
-                .run_if(in_state(ClientState::TileSelect))
-                .in_set(ClientLogicSet::Update),
+                .run_if(in_state(ClientState::TileSelect)),
         )
         .configure_sets(
             Update,
             ClientSet::Play
                 .run_if(in_state(ClientFwState::Game))
-                .run_if(in_state(ClientState::Play))
-                .in_set(ClientLogicSet::Update),
+                .run_if(in_state(ClientState::Play)),
         )
         .configure_sets(
             Update,
             ClientSet::End
                 .run_if(in_state(ClientFwState::End))
-                .run_if(in_state(ClientState::End))
-                .in_set(ClientLogicSet::Update),
-        )
-        .configure_sets(
-            Update,
-            (ClientLogicSet::Admin, ClientLogicSet::Update)
-                .chain()
-                .run_if(in_state(ClientAppState::Game)),
+                .run_if(in_state(ClientState::End)),
         );
     }
 }

@@ -166,11 +166,11 @@ fn make_test_game_hub_server(
 fn config_paths() -> Vec<PathBuf>
 {
     let mut paths = Vec::default();
-    paths.push("/backend/game_hub.toml".into());
-    paths.push("/backend/host_backend.toml".into());
-    paths.push("/frontend/host_frontend.toml".into());
-    paths.push("/frontend/lobby.toml".into());
-    paths.push("/game/game.toml".into());
+    paths.push("backend/game_hub.toml".into());
+    paths.push("backend/host_backend.toml".into());
+    paths.push("frontend/host_frontend.toml".into());
+    paths.push("frontend/lobby.toml".into());
+    paths.push("game/game.toml".into());
 
     paths
 }

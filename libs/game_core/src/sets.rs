@@ -64,15 +64,13 @@ impl Plugin for GameSetsPlugin
             Update,
             GameSet::TileSelect
                 .run_if(in_state(GameFwState::Game))
-                .run_if(in_state(GameState::TileSelect))
-                .in_set(GameLogicSet::Update),
+                .run_if(in_state(GameState::TileSelect)),
         )
         .configure_sets(
             Update,
             GameSet::Play
                 .run_if(in_state(GameFwState::Game))
-                .run_if(in_state(GameState::Play))
-                .in_set(GameLogicSet::Update),
+                .run_if(in_state(GameState::Play)),
         )
         // - This will only run in the span between entering 'game over' and the GameFwState moving to 'End', which
         //   is controlled by `GameFwConfig::max_end_ticks()`.
@@ -81,8 +79,7 @@ impl Plugin for GameSetsPlugin
             Update,
             GameSet::End
                 .run_if(in_state(GameFwState::Game))
-                .run_if(in_state(GameState::End))
-                .in_set(GameLogicSet::Update),
+                .run_if(in_state(GameState::End)),
         );
     }
 }
