@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 pub enum ClientType
 {
     Player,
-    /// Currently not supported.
-    Watcher,
+    // Currently not supported.
+    //Watcher,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

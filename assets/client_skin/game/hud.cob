@@ -1,5 +1,5 @@
 #import
-ui.skin as _
+client.zsort as zsort
 
 #defs
 +button = \
@@ -11,21 +11,16 @@ ui.skin as _
         FlexNode{margin:{top:5px bottom:5px left:7px right:7px}}
         TextLine
 \
-+scoreboard_header_item = \
-    GridNode{border:{bottom:1px}}
-    BorderColor(#000000)
-
-    "text"
-        FlexNode{margin:{bottom:2px left:5px right:5px}}
-\
 
 #scenes
-"game"
+"hud"
+    GlobalZIndex($zsort::ZINDEX_HUD)
     FlexNode{width:100vw height:100vh flex_direction:Column justify_main:FlexStart}
     Picking::Ignore
 
-    "header"
+    "top"
         FlexNode{width:100% height:25px flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
+        Picking::Ignore
 
         "name_shim"
             AbsoluteNode{width:100% height:100% justify_main:Center justify_cross:Center}
@@ -42,18 +37,33 @@ ui.skin as _
             "text"
                 TextLine{size:15}
 
-    "footer"
-        FlexNode{width:100% flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
+    "center"
+        FlexNode{flex_grow:1 flex_direction:Row}
+        Picking::Ignore
 
-        "disconnect_button"
+        "left"
+            FlexNode{height:100%}
+            Picking::Ignore
+
+        "middle"
+            FlexNode{flex_grow:1 height:100%}
+            Picking::Ignore
+
+        "right"
+            FlexNode{height:100%}
+            Picking::Ignore
+
+    "bottom"
+        FlexNode{width:100% flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
+        Picking::Ignore
+
+        "settings_button"
             +button{
-                SetJustifySelfCross(Center)
                 Margin{left:10px bottom:10px}
                 Responsive<BackgroundColor>{
                     idle:#00000000 hover:#55888888 press:#77888888
                 }
 
                 "text"
-                    TextLine{text:"Disconnect" size:20}
+                    TextLine{text:"Settings" size:20}
             }
-

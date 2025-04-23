@@ -1,19 +1,12 @@
 use bevy::prelude::*;
 
-use super::*;
-
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) struct GameUiPlugin;
+pub(super) struct GameUiTileSelectPlugin;
 
-impl Plugin for GameUiPlugin
+impl Plugin for GameUiTileSelectPlugin
 {
-    fn build(&self, app: &mut App)
-    {
-        app.add_plugins(GameUiHudPlugin)
-            .add_plugins(GameUiSettingsPlugin)
-            .add_plugins(GameUiTileSelectPlugin);
-    }
+    fn build(&self, _app: &mut App) {}
 }
 
 //-------------------------------------------------------------------------------------------------------------------

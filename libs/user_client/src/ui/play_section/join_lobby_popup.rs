@@ -137,7 +137,7 @@ impl Plugin for UiJoinLobbyPopupPlugin
             .add_reactor(broadcast::<ActivateJoinLobbyPopup>(), update_join_lobby_data)
             .add_reactor(
                 broadcast::<ActivateJoinLobbyPopup>(),
-                setup_broadcast_popup(("ui.user.sections.play", "join_lobby_popup"), build_join_lobby_popup),
+                setup_broadcast_popup(("user.sections.play", "join_lobby_popup"), build_join_lobby_popup),
             );
     }
 }

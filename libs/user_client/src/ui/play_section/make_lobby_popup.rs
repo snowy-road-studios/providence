@@ -142,7 +142,7 @@ impl Plugin for UiMakeLobbyPopupPlugin
     {
         app.add_reactor(
             broadcast::<ActivateMakeLobbyPopup>(),
-            setup_broadcast_popup(("ui.user.sections.play", "make_lobby_popup"), build_make_lobby_popup),
+            setup_broadcast_popup(("user.sections.play", "make_lobby_popup"), build_make_lobby_popup),
         );
     }
 }

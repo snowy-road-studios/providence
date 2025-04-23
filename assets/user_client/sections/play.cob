@@ -9,8 +9,8 @@ Networked buttons should indicate request status.
 */
 
 #import
-ui.user.widgets as widgets
-ui_common.constants as const
+user.widgets as widgets
+user.zsort as zsort
 
 #defs
 $lobby_list_line_color = #77FFFFFF
@@ -282,7 +282,7 @@ $lobby_list_text_size = 20
 
 "make_lobby_popup"
     +widgets::popup{
-        GlobalZIndex($const::ZINDEX_MAKE_LOBBY_POPUP)
+        GlobalZIndex($zsort::ZINDEX_MAKE_LOBBY_POPUP)
         "window"
             "title"
                 "text"
@@ -370,7 +370,7 @@ $lobby_list_text_size = 20
 
 "join_lobby_popup"
     +widgets::popup{
-        GlobalZIndex($const::ZINDEX_JOIN_LOBBY_POPUP)
+        GlobalZIndex($zsort::ZINDEX_JOIN_LOBBY_POPUP)
         "window"
             "title"
                 "text"

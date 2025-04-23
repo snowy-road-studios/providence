@@ -16,7 +16,6 @@ impl Plugin for ClientSkinPlugin
     {
         app.add_plugins(UiPlugin)
             .add_plugins(FpsTrackerPlugin)
-            .add_plugins(LoadingSimPlugin)
             .add_plugins(StateChangesPlugin);
     }
 }

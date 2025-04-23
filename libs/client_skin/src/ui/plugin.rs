@@ -11,13 +11,10 @@ impl Plugin for UiPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app
-            .load("client_skin/main.cob")
+        app.load("client_skin/main.cob")
             .add_plugins(LoadScreenPlugin)
             .add_plugins(GameUiPlugin)
-            .add_plugins(GameOverPlugin)
-            //.add_plugins(UiDebugOverlayPlugin)  //DEBUG ONLY
-            ;
+            .add_plugins(GameOverPlugin);
     }
 }
 

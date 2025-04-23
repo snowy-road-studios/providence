@@ -185,7 +185,6 @@ impl Plugin for ProvClientGlobalPlugin
         app.init_resource::<PipelinesReady>()
             .add_plugins(BevyEnginePlugin)
             .add_plugins(CobwebUiPlugin)
-            .load("ui_common/constants.cob")
             .add_systems(PreStartup, setup)
             .add_systems(
                 Update,

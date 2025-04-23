@@ -3,7 +3,6 @@ use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::*;
 use bevy_girk_game_fw::*;
-use client_core::ClientLogicSet;
 
 use crate::*;
 
@@ -16,7 +15,7 @@ struct RefreshLoadBar;
 
 fn add_loadscreen(mut c: Commands, mut s: SceneBuilder)
 {
-    let scene = ("ui.skin", "loadscreen");
+    let scene = ("client.loadscreen", "loadscreen");
     c.ui_root().spawn_scene(scene, &mut s, |h| {
         h.despawn_on_broadcast::<ExitingInit>();
         h.insert(StateScoped(ClientAppState::Game));

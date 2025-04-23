@@ -29,24 +29,18 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
 
                 // Spawn new entries
                 for (idx, lobby) in page.get().iter().enumerate() {
-                    c.ui_builder(*id).spawn_scene(
-                        ("ui.user.sections.play", "lobby_list_entry_lobby"),
-                        &mut s,
-                        |h| {
+                    c.ui_builder(*id)
+                        .spawn_scene(("user.sections.play", "lobby_list_entry_lobby"), &mut s, |h| {
                             h.get("text")
                                 .update_text(format!("{:0>6}", lobby.id % 1_000_000u64));
-                        },
-                    );
-                    c.ui_builder(*id).spawn_scene(
-                        ("ui.user.sections.play", "lobby_list_entry_owner"),
-                        &mut s,
-                        |h| {
+                        });
+                    c.ui_builder(*id)
+                        .spawn_scene(("user.sections.play", "lobby_list_entry_owner"), &mut s, |h| {
                             h.get("text")
                                 .update_text(format!("{:0>6}", lobby.owner_id % 1_000_000u128));
-                        },
-                    );
+                        });
                     c.ui_builder(*id).spawn_scene(
-                        ("ui.user.sections.play", "lobby_list_entry_players"),
+                        ("user.sections.play", "lobby_list_entry_players"),
                         &mut s,
                         |h| {
                             h.get("text").update_text(format!(
@@ -57,7 +51,7 @@ pub(super) fn build_lobby_list(h: &mut UiSceneHandle)
                         },
                     );
                     c.ui_builder(*id).spawn_scene(
-                        ("ui.user.sections.play", "lobby_list_entry_join_button"),
+                        ("user.sections.play", "lobby_list_entry_join_button"),
                         &mut s,
                         |h| {
                             h.on_pressed(move |mut c: Commands| {

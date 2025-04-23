@@ -16,11 +16,11 @@ dev = ["bevy/dynamic_linking", "wiring_game_instance/dev", "game_core/dev"]
 bevy               = { workspace = true }
 bevy_cobweb        = { workspace = true }
 bevy_simplenet     = { workspace = true }
-clap               = { workspace = true, features = [ "derive" ] }
+clap               = { workspace = true, features = ["derive"] }
 enfync             = { workspace = true }
 renet2_setup       = { workspace = true, features = ["netcode"] }
 serde_json         = { workspace = true }
-tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
+tracing-subscriber = { workspace = true, features = ["env-filter", "std", "tracing-log"] }
 tracing            = { workspace = true }
 tokio              = { workspace = true, default-features = false, features = ["process"] }
 

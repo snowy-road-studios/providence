@@ -2,13 +2,14 @@ use bevy::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
 use bevy_girk_client_instance::ClientInstanceCommand;
-use client_core::*;
+
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn game_over_screen(mut c: Commands, mut s: SceneBuilder)
 {
-    let scene = ("ui.skin", "gameover");
+    let scene = ("client.gameover", "gameover");
     c.ui_root().spawn_scene(scene, &mut s, |h| {
         h.insert(StateScoped(ClientAppState::Game));
 

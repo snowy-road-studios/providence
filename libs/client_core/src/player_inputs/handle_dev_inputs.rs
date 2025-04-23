@@ -29,7 +29,7 @@ pub(crate) fn handle_dev_inputs(world: &mut World)
     let is_player = ctx.client_type() == ClientType::Player;
     let is_playstate = state == ClientState::Play;
 
-    let Some(inputs) = world.remove_resource::<Receiver<PlayerInput>>() else {
+    let Some(inputs) = world.remove_resource::<Receiver<DevInput>>() else {
         return;
     };
 
@@ -42,7 +42,7 @@ pub(crate) fn handle_dev_inputs(world: &mut World)
             tracing::warn!("ignoring invalid dev input sent during {state:?}: {input:?}");
             continue;
         }
-        world.syscall(ClientRequest::PlayerInput(input), send_client_request);
+        world.syscall(ClientRequest::DevInput(input), send_client_request);
     }
 
     world.insert_resource(inputs);

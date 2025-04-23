@@ -1,6 +1,3 @@
-#import
-ui.user as ui
-
 #commands
 LoadImages[
     "logo.png"
@@ -11,7 +8,6 @@ LoadImages[
     RadioButton
     ControlRoot
     FlexNode{width:150px}
-    Interactive
     Multi<Responsive<BackgroundColor>>[
         {idle:#000000 hover:#444444}
         {state:[Selected] idle:#666666}

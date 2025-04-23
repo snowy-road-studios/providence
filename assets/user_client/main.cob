@@ -1,12 +1,13 @@
 #manifest
-self as ui.user
-"user_client/sidebar.cob" as ui.user.sidebar
-"user_client/sections/main.cob" as ui.user.sections
-"user_client/widgets/main.cob" as ui.user.widgets
+self as user
+"user_client/sidebar.cob" as user.sidebar
+"user_client/sections/main.cob" as user.sections
+"user_client/widgets/main.cob" as user.widgets
+"user_client/zsort.cob" as user.zsort
 
 #import
-ui_common.constants as const
-ui.user.widgets as widgets
+user.zsort as zsort
+user.widgets as widgets
 
 #defs
 //button bg color
@@ -26,7 +27,7 @@ ui.user.widgets as widgets
 
 "reconnecting_overlay"
     FlexNode{width:100vw height:100vh justify_main:Center justify_cross:Center}
-    GlobalZIndex($const::ZINDEX_RECONNECTING_OVERLAY)
+    GlobalZIndex($zsort::ZINDEX_RECONNECTING_OVERLAY)
     FocusPolicy::Block
     Picking::Block
     BackgroundColor(#000000)
@@ -37,7 +38,7 @@ ui.user.widgets as widgets
 
 "ack_popup"
     +widgets::popup{
-        GlobalZIndex($const::ZINDEX_ACK_LOBBY_POPUP)
+        GlobalZIndex($zsort::ZINDEX_ACK_LOBBY_POPUP)
         "window"
             "title"
                 "text"
