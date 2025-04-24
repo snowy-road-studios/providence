@@ -27,6 +27,9 @@ pub(crate) struct GameTime
     start_time: Duration,
     /// Time elapsed since the game started.
     game_time: Duration,
+    /// Amount of time the clock was accelerated.
+    #[cfg(feature = "commands")]
+    time_skip: Duration,
 }
 
 impl GameTime
@@ -39,6 +42,17 @@ impl GameTime
     pub(crate) fn update(&mut self, app_time: Duration)
     {
         self.game_time = app_time.saturating_sub(self.start_time);
+
+        #[cfg(feature = "commands")]
+        {
+            self.game_time = self.game_time.saturating_add(self.time_skip);
+        }
+    }
+
+    #[cfg(feature = "commands")]
+    pub(crate) fn add_timeskip(&mut self, skip: Duration)
+    {
+        self.time_skip = self.time_skip.saturating_add(skip);
     }
 
     pub(crate) fn elapsed(&self) -> Duration

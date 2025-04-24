@@ -25,7 +25,9 @@ fn add_command_button<R: CobwebResult, M>(
 pub(super) fn build_settings_commands_section(h: &mut UiSceneHandle)
 {
     // Jump to the next round.
-    //add_command_button(h, "Next Round", |mut client: ResMut<RenetClient>| client.disconnect());
+    add_command_button(h, "Next Round", |sender: Res<Sender<CommandInput>>| {
+        let _ = sender.send(CommandInput::NextRound);
+    });
     // Disconnects the renet2 client.
     add_command_button(h, "Disconnect", |client: Option<ResMut<RenetClient>>| {
         client.result()?.disconnect();

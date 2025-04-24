@@ -28,6 +28,7 @@ impl IntoChannel for PlayerInput
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub enum CommandInput
 {
+    NextRound,
     EndGame,
 }
 
