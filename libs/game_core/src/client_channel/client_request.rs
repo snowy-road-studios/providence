@@ -23,13 +23,31 @@ impl IntoChannel for PlayerInput
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Special developer inputs that can be sent to the game.
-#[cfg(feature = "commands")]
+/// Special commands that can be sent to the game.
+///
+/// Commands do nothing unless the `"commands"` feature is enabled.
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
 pub enum CommandInput
 {
     NextRound,
+    Pause,
+    Unpause,
     EndGame,
+}
+
+impl CommandInput
+{
+    /// Returns true if the server is able to process commands.
+    ///
+    /// Can be used to validate that commands are disabled in prod.
+    pub const fn command_processing_enabled() -> bool
+    {
+        #[cfg(feature = "commands")]
+        return true;
+
+        #[cfg(not(feature = "commands"))]
+        return false;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -42,7 +60,6 @@ pub enum ClientRequest
     GetGameState,
     /// Player input.
     PlayerInput(PlayerInput),
-    #[cfg(feature = "commands")]
     CommandInput(CommandInput),
 }
 
@@ -53,7 +70,6 @@ impl IntoChannel for ClientRequest
         match &self {
             Self::GetGameState => SendOrdered.into(),
             Self::PlayerInput(input) => input.into_event_type(),
-            #[cfg(feature = "commands")]
             Self::CommandInput(_) => SendOrdered.into(),
         }
     }

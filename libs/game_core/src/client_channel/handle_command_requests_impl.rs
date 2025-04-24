@@ -1,13 +1,19 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use bevy_cobweb::prelude::*;
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_command_input(In((_player_entity, input)): In<(Entity, CommandInput)>, world: &mut World)
+pub(crate) fn handle_command_input(
+    In((_player_entity, id, input)): In<(Entity, ClientId, CommandInput)>,
+    world: &mut World,
+)
 {
+    tracing::debug!("applying {input:?} from client {id}");
+
     match input {
         CommandInput::NextRound => {
             let gametime = world.resource::<GameTime>().elapsed();
@@ -22,6 +28,14 @@ pub(crate) fn handle_command_input(In((_player_entity, input)): In<(Entity, Comm
             world
                 .resource_mut::<GameTime>()
                 .add_timeskip(Duration::from_millis(remaining_ms as u64 + 1));
+        }
+        CommandInput::Pause => {
+            world.resource_mut::<GameTime>().pause();
+            world.syscall((), |mut sender: GameSender| sender.send_to_all(GameMsg::Pause));
+        }
+        CommandInput::Unpause => {
+            world.resource_mut::<GameTime>().unpause();
+            world.syscall((), |mut sender: GameSender| sender.send_to_all(GameMsg::Unpause));
         }
         CommandInput::EndGame => {
             world

@@ -3568,6 +3568,8 @@ dependencies = [
  "bevy_girk_game_instance",
  "bevy_girk_utils",
  "clap",
+ "game_core",
+ "static_assertions",
  "tracing",
  "tracing-subscriber",
  "wiring_game_instance",

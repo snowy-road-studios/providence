@@ -10,15 +10,18 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["bevy/dynamic_linking", "wiring_game_instance/dev"]
+dev = ["commands", "bevy/dynamic_linking", "game_core/dev", "wiring_game_instance/dev"]
+commands = ["game_core/commands"]
 
 [dependencies]
 bevy               = { workspace = true }
 clap               = { workspace = true, features = [ "derive" ] }
+static_assertions  = { workspace = true }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std", "tracing-log" ] }
 tracing            = { workspace = true }
 
 bevy_girk_game_instance = { workspace = true, features = ["process"] }
-bevy_girk_utils           = { workspace = true }
+bevy_girk_utils = { workspace = true }
 
+game_core = { path = "../../libs/game_core", default-features = false }
 wiring_game_instance = { path = "../../libs/wiring_game_instance", default-features = false }

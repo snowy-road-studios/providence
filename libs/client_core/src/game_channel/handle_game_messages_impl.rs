@@ -60,3 +60,19 @@ pub(super) fn handle_round_info(In((round, remaining_ms)): In<(u32, u128)>, mut 
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+
+pub(super) fn handle_pause(mut select_timer: ResMut<TileSelectTimer>, mut round_timer: ResMut<RoundTimer>)
+{
+    select_timer.pause();
+    round_timer.pause();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub(super) fn handle_unpause(mut select_timer: ResMut<TileSelectTimer>, mut round_timer: ResMut<RoundTimer>)
+{
+    select_timer.unpause();
+    round_timer.unpause();
+}
+
+//-------------------------------------------------------------------------------------------------------------------

@@ -36,6 +36,8 @@ pub enum GameMsg
         round: u32,
         remaining_ms: u128,
     },
+    Pause,
+    Unpause,
 }
 
 impl IntoChannel for GameMsg
@@ -47,6 +49,8 @@ impl IntoChannel for GameMsg
             Self::CurrentGameState(_) => SendOrdered.into(),
             Self::TileSelectInfo { .. } => SendOrdered.into(),
             Self::RoundInfo { .. } => SendOrdered.into(),
+            Self::Pause => SendOrdered.into(),
+            Self::Unpause => SendOrdered.into(),
         }
     }
 }

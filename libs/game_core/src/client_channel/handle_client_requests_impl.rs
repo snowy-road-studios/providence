@@ -23,7 +23,10 @@ pub(crate) fn handle_game_state_request(In(client_id): In<ClientId>, world: &mut
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_player_input(In((_player_entity, input)): In<(Entity, PlayerInput)>, _world: &mut World)
+pub(crate) fn handle_player_input(
+    In((_player_entity, _id, input)): In<(Entity, ClientId, PlayerInput)>,
+    _world: &mut World,
+)
 {
     match input {
         PlayerInput::Placeholder => (),

@@ -2,10 +2,19 @@ use bevy_girk_game_instance::*;
 use clap::Parser;
 use wiring_game_instance::*;
 
+#[allow(unused_imports)]
+#[macro_use]
+extern crate static_assertions;
+
 //-------------------------------------------------------------------------------------------------------------------
 
 fn main()
 {
+    #[cfg(not(feature = "commands"))]
+    {
+        const_assert!(!game_core::CommandInput::command_processing_enabled());
+    }
+
     // log to stderr (not stdout, which is piped to the parent process for sending game instance reports)
     //todo: log to file instead (use env::arg configs?)
     let filter = tracing_subscriber::EnvFilter::builder()

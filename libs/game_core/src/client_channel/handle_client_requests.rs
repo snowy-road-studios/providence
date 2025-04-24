@@ -9,10 +9,10 @@ use crate::*;
 fn player_syscall<A, S, Marker>(world: &mut World, id: ClientId, req: ClientRequest, arg: A, sys: S)
 where
     A: Send + Sync + 'static,
-    S: IntoSystem<In<(Entity, A)>, (), Marker> + Send + Sync + 'static,
+    S: IntoSystem<In<(Entity, ClientId, A)>, (), Marker> + Send + Sync + 'static,
 {
     match world.resource::<PlayerMap>().client_to_entity(id) {
-        Ok(player_entity) => world.syscall((player_entity, arg), sys),
+        Ok(player_entity) => world.syscall((player_entity, id, arg), sys),
         Err(err) => {
             tracing::trace!(?id, ?err, "player syscall failed, client is not player");
             world.syscall((id, req, RejectionReason::Invalid), notify_request_rejected);
@@ -38,11 +38,17 @@ pub(crate) fn handle_client_request(world: &mut World, id: ClientId, req: Client
             GameState::Play => player_syscall(world, id, req, i, handle_player_input),
             _ => reject(world),
         },
-        #[cfg(feature = "commands")]
-        ClientRequest::CommandInput(i) => match state {
-            GameState::TileSelect | GameState::Play => player_syscall(world, id, req, i, handle_command_input),
-            _ => reject(world),
-        },
+        ClientRequest::CommandInput(i) => {
+            #[cfg(not(feature = "commands"))]
+            {
+                tracing::debug!("ignoring {i:?} from client {id}; commands are disabled");
+            }
+            #[cfg(feature = "commands")]
+            match state {
+                GameState::TileSelect | GameState::Play => player_syscall(world, id, req, i, handle_command_input),
+                _ => reject(world),
+            }
+        }
     }
 }
 

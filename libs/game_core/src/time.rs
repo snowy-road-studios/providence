@@ -30,6 +30,10 @@ pub(crate) struct GameTime
     /// Amount of time the clock was accelerated.
     #[cfg(feature = "commands")]
     time_skip: Duration,
+    #[cfg(feature = "commands")]
+    paused: bool,
+    #[cfg(feature = "commands")]
+    pause_elapsed: Duration,
 }
 
 impl GameTime
@@ -41,6 +45,18 @@ impl GameTime
 
     pub(crate) fn update(&mut self, app_time: Duration)
     {
+        #[cfg(feature = "commands")]
+        {
+            if self.paused {
+                self.pause_elapsed = app_time.saturating_sub(
+                    self.game_time
+                        .saturating_sub(self.time_skip)
+                        .saturating_add(self.start_time),
+                );
+                return;
+            }
+        }
+
         self.game_time = app_time.saturating_sub(self.start_time);
 
         #[cfg(feature = "commands")]
@@ -53,6 +69,22 @@ impl GameTime
     pub(crate) fn add_timeskip(&mut self, skip: Duration)
     {
         self.time_skip = self.time_skip.saturating_add(skip);
+        self.game_time = self.game_time.saturating_add(skip);
+    }
+
+    #[cfg(feature = "commands")]
+    pub(crate) fn pause(&mut self)
+    {
+        self.paused = true;
+        self.pause_elapsed = Duration::default();
+    }
+
+    #[cfg(feature = "commands")]
+    pub(crate) fn unpause(&mut self)
+    {
+        self.paused = false;
+        self.add_timeskip(self.pause_elapsed);
+        self.pause_elapsed = Duration::default();
     }
 
     pub(crate) fn elapsed(&self) -> Duration

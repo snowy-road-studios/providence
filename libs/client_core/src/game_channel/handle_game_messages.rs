@@ -27,6 +27,8 @@ pub(crate) fn handle_game_message(world: &mut World, _tick: Tick, message: GameM
         GameMsg::CurrentGameState(game_state) => world.syscall(game_state, handle_game_state),
         GameMsg::TileSelectInfo { remaining_ms } => world.syscall(remaining_ms, handle_tile_select_info),
         GameMsg::RoundInfo { round, remaining_ms } => world.syscall((round, remaining_ms), handle_round_info),
+        GameMsg::Pause => world.syscall((), handle_pause),
+        GameMsg::Unpause => world.syscall((), handle_unpause),
     }
 }
 

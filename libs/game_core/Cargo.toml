@@ -9,7 +9,7 @@ doctest = false
 
 [features]
 default = ["dev", "commands"]
-dev = []
+dev = ["commands"]
 # Enables handling of command inputs from clients.
 commands = []
 

@@ -28,6 +28,14 @@ pub(super) fn build_settings_commands_section(h: &mut UiSceneHandle)
     add_command_button(h, "Next Round", |sender: Res<Sender<CommandInput>>| {
         let _ = sender.send(CommandInput::NextRound);
     });
+    // Pause the game clock.
+    add_command_button(h, "Pause Game", |sender: Res<Sender<CommandInput>>| {
+        let _ = sender.send(CommandInput::Pause);
+    });
+    // Unpause the game clock.
+    add_command_button(h, "Unpause Game", |sender: Res<Sender<CommandInput>>| {
+        let _ = sender.send(CommandInput::Unpause);
+    });
     // Disconnects the renet2 client.
     add_command_button(h, "Disconnect", |client: Option<ResMut<RenetClient>>| {
         client.result()?.disconnect();
