@@ -75,7 +75,7 @@ impl GameDurationConfig
         let remaining_ms = play_time_ms % round_time_ms;
 
         if rounds_complete as u32 == self.num_rounds {
-            return Some((self.num_rounds, 0));
+            return Some((self.num_rounds + 1, 0));
         }
 
         Some((rounds_complete as u32 + 1, remaining_ms))

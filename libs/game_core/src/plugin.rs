@@ -22,7 +22,7 @@ impl Plugin for GamePlugin
             .add_plugins(ClientConnectPlugin)
             .configure_sets(
                 Update,
-                (TimeUpdateSet, GameStateUpdateSet, RoundUpdateSet)
+                (TimeUpdateSet, RoundEndSet, GameStateUpdateSet, RoundStartSet)
                     .chain()
                     .in_set(GameLogicSet::Admin),
             );
