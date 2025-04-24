@@ -33,8 +33,18 @@ client.zsort as zsort
         FlexNode{width:80% height:80% flex_direction:Column}
         BrRadius(5px)
         Splat<Border>(3px)
-        BackgroundColor(#880099)
-        BorderColor(#550066)
+        BackgroundColor(#3c548b)
+        BorderColor(#1c253b)
+
+        "header"
+            FlexNode{
+                width:100% height:50px flex_direction:Row justify_main:Center justify_cross:Center
+                border:{bottom:1px}
+            }
+            BorderColor(#222222)
+
+            "title"
+                TextLine{text:"Settings"}
 
         "main"
             FlexNode{flex_direction:Row width:100% flex_grow:1}
@@ -43,25 +53,33 @@ client.zsort as zsort
                 RadioGroup
                 FlexNode{
                     min_width:200px height:100% flex_direction:Column justify_main:FlexStart justify_cross:Center
-                    border:{left:1px}
+                    border:{right:1px}
                 }
-                BorderColor(#BB222222)
+                BorderColor(#222222)
 
             "content"
 
         "footer"
             FlexNode{
-                width:100% height:200px flex_direction:Row justify_cross:Center
+                width:100% height:75px flex_direction:Row justify_cross:Center
                 border:{top:1px}
+                padding:{left:20px right:20px}
             }
             BorderColor(#BB222222)
 
-            "quit_button"
+            "abort_game_button"
                 +footer_button{
-                    Margin{right:20px}
-
                     "text"
-                        TextLine{text:"Quit"}
+                        TextLine{text:"Abort Game"}
+                }
+
+            ""
+                FlexNode{width:20px}
+
+            "end_game_button"
+                +footer_button{
+                    "text"
+                        TextLine{text:"End Game"}
                 }
 
             ""
@@ -69,8 +87,6 @@ client.zsort as zsort
 
             "done_button"
                 +footer_button{
-                    Margin{left:20px}
-
                     "text"
                         TextLine{text:"Done"}
                 }
@@ -109,13 +125,13 @@ client.zsort as zsort
 "audio_section"
     FlexNode{flex_grow:1 height:100%}
 
-"dev_section"
+"commands_section"
     FlexNode{
         flex_grow:1 height:100% flex_direction:Column flex_wrap:Wrap justify_main:FlexStart justify_cross:FlexStart
         padding:{left:5px right:5px top:7px bottom:7px}
     }
 
-"dev_button"
+"command_button"
     ControlRoot
     FlexNode{justify_main:Center justify_cross:Center}
     Splat<Border>(1px)

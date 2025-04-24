@@ -38,9 +38,9 @@ pub(crate) fn handle_client_request(world: &mut World, id: ClientId, req: Client
             GameState::Play => player_syscall(world, id, req, i, handle_player_input),
             _ => reject(world),
         },
-        #[cfg(feature = "dev")]
-        ClientRequest::DevInput(i) => match state {
-            GameState::Play => player_syscall(world, id, req, i, handle_dev_input),
+        #[cfg(feature = "commands")]
+        ClientRequest::CommandInput(i) => match state {
+            GameState::TileSelect | GameState::Play => player_syscall(world, id, req, i, handle_command_input),
             _ => reject(world),
         },
     }

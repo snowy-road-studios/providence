@@ -24,9 +24,9 @@ impl IntoChannel for PlayerInput
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Special developer inputs that can be sent to the game.
-#[cfg(feature = "dev")]
+#[cfg(feature = "commands")]
 #[derive(Debug, Serialize, Deserialize, Copy, Clone)]
-pub enum DevInput
+pub enum CommandInput
 {
     EndGame,
 }
@@ -41,8 +41,8 @@ pub enum ClientRequest
     GetGameState,
     /// Player input.
     PlayerInput(PlayerInput),
-    #[cfg(feature = "dev")]
-    DevInput(DevInput),
+    #[cfg(feature = "commands")]
+    CommandInput(CommandInput),
 }
 
 impl IntoChannel for ClientRequest
@@ -52,8 +52,8 @@ impl IntoChannel for ClientRequest
         match &self {
             Self::GetGameState => SendOrdered.into(),
             Self::PlayerInput(input) => input.into_event_type(),
-            #[cfg(feature = "dev")]
-            Self::DevInput(_) => SendOrdered.into(),
+            #[cfg(feature = "commands")]
+            Self::CommandInput(_) => SendOrdered.into(),
         }
     }
 }

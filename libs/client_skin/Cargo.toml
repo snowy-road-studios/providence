@@ -27,5 +27,5 @@ bevy_girk_game_fw = { workspace = true }
 bevy_girk_utils = { workspace = true }
 
 client_core = { path = "../client_core", default-features = false }
-game_core   = { path = "../game_core", default-features = false }
+game_core   = { path = "../game_core", default-features = false, features = ["commands"] }
 wiring_game_instance  = { path = "../wiring_game_instance", default-features = false }

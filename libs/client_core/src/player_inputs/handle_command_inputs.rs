@@ -27,9 +27,9 @@ pub(crate) fn handle_dev_inputs(world: &mut World)
     let ctx = world.resource::<ClientContext>();
     let client_id = ctx.id();
     let is_player = ctx.client_type() == ClientType::Player;
-    let is_playstate = state == ClientState::Play;
+    let is_initstate = state == ClientState::Init;
 
-    let Some(inputs) = world.remove_resource::<Receiver<DevInput>>() else {
+    let Some(inputs) = world.remove_resource::<Receiver<CommandInput>>() else {
         return;
     };
 
@@ -38,11 +38,11 @@ pub(crate) fn handle_dev_inputs(world: &mut World)
             tracing::warn!("ignoring dev input sent by non-player client {client_id}: {input:?}");
             continue;
         }
-        if !is_playstate {
+        if is_initstate {
             tracing::warn!("ignoring invalid dev input sent during {state:?}: {input:?}");
             continue;
         }
-        world.syscall(ClientRequest::DevInput(input), send_client_request);
+        world.syscall(ClientRequest::CommandInput(input), send_client_request);
     }
 
     world.insert_resource(inputs);
@@ -52,12 +52,12 @@ pub(crate) fn handle_dev_inputs(world: &mut World)
 
 pub(crate) fn clear_dev_inputs(world: &mut World)
 {
-    let Some(inputs) = world.get_resource_mut::<Receiver<DevInput>>() else {
+    let Some(commands) = world.get_resource_mut::<Receiver<CommandInput>>() else {
         return;
     };
 
-    while let Some(input) = inputs.try_recv() {
-        tracing::debug!("discarding dev input: {input:?}")
+    while let Some(command) = commands.try_recv() {
+        tracing::debug!("discarding command input: {command:?}")
     }
 }
 

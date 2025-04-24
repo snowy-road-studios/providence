@@ -38,6 +38,8 @@ fn build_hud(mut c: Commands, mut s: SceneBuilder)
             h.insert(StateScoped(ClientAppState::Game));
 
             h.edit("top", edit_header);
+            h.get("bottom::settings_button")
+                .on_pressed(|mut c: Commands| c.react().broadcast(ToggleSettings));
         });
 }
 

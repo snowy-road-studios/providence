@@ -8,9 +8,10 @@ test    = false
 doctest = false
 
 [features]
-default = ["dev"]
-# Enables handling of dev inputs from clients.
+default = ["dev", "commands"]
 dev = []
+# Enables handling of command inputs from clients.
+commands = []
 
 [dependencies]
 bevy                     = { workspace = true }

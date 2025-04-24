@@ -4,10 +4,10 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(crate) fn handle_dev_input(In((_player_entity, input)): In<(Entity, DevInput)>, world: &mut World)
+pub(crate) fn handle_command_input(In((_player_entity, input)): In<(Entity, CommandInput)>, world: &mut World)
 {
     match input {
-        DevInput::EndGame => {
+        CommandInput::EndGame => {
             world
                 .resource_mut::<NextState<GameState>>()
                 .set(GameState::End);

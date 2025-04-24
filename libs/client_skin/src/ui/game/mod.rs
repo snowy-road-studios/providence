@@ -4,6 +4,6 @@ mod settings;
 mod tileselect;
 
 pub(self) use hud::*;
-pub(super) use plugin::*;
-pub(self) use settings::*;
+pub(crate) use plugin::*;
+pub(crate) use settings::*;
 pub(self) use tileselect::*;

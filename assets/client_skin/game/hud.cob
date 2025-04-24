@@ -1,17 +1,6 @@
 #import
 client.zsort as zsort
 
-#defs
-+button = \
-    FlexNode{justify_main:Center justify_cross:Center}
-    Splat<Border>(1px)
-    BorderColor(#000000)
-
-    "text"
-        FlexNode{margin:{top:5px bottom:5px left:7px right:7px}}
-        TextLine
-\
-
 #scenes
 "hud"
     GlobalZIndex($zsort::ZINDEX_HUD)
@@ -58,12 +47,16 @@ client.zsort as zsort
         Picking::Ignore
 
         "settings_button"
-            +button{
-                Margin{left:10px bottom:10px}
-                Responsive<BackgroundColor>{
-                    idle:#00000000 hover:#55888888 press:#77888888
-                }
-
-                "text"
-                    TextLine{text:"Settings" size:20}
+            FlexNode{
+                justify_main:Center justify_cross:Center
+                margin:{left:10px bottom:10px}
             }
+            Splat<Border>(1px)
+            BorderColor(#000000)
+            Responsive<BackgroundColor>{
+                idle:#00000000 hover:#55888888 press:#77888888
+            }
+
+            "text"
+                FlexNode{margin:{top:5px bottom:5px left:7px right:7px}}
+                TextLine{text:"Settings" size:20}

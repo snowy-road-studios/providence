@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use bevy_cobweb::prelude::*;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_instance::{ClientInstanceCommand, LocalGameManager};
+use bevy_girk_utils::Sender;
 
 use super::*;
 use crate::*;
@@ -57,13 +58,15 @@ fn build_settings(mut c: Commands, mut s: SceneBuilder, localgame: Res<LocalGame
                         Ok(DisplayControl::Show) => {
                             ec.apply(DisplayControl::Hide);
                         }
-                        Err(_) | Ok(DisplayControl::Hide) => {
+                        Ok(DisplayControl::Hide) | Err(_) => {
                             ec.apply(DisplayControl::Show);
                         }
                     }
                     DONE
                 },
             );
+
+            // TODO: restore defaults button to right of title
 
             let content_id = h.get_entity("window::main::content")?;
 
@@ -96,24 +99,42 @@ fn build_settings(mut c: Commands, mut s: SceneBuilder, localgame: Res<LocalGame
                     ("client.game.settings", "audio_section"),
                     build_settings_audio_section,
                 );
-                #[cfg(feature = "dev")]
-                add_menu_button(
-                    h,
-                    content_id,
-                    "Dev",
-                    ("client.game.settings", "dev_section"),
-                    build_settings_dev_section,
-                );
+                if localgame.is_running() || cfg!(feature = "dev") {
+                    add_menu_button(
+                        h,
+                        content_id,
+                        "Commands",
+                        ("client.game.settings", "commands_section"),
+                        build_settings_commands_section,
+                    );
+                }
 
                 // Initialize menu.
                 h.react().entity_event(game_section_id, Select);
             });
 
-            h.edit("window::footer::quit_button", |h| {
+            h.edit("window::footer::abort_game_button", |h| {
                 if localgame.is_running() {
                     h.on_pressed(|mut c: Commands| {
-                        c.queue(ClientInstanceCommand::Abort);
+                        c.queue(ClientInstanceCommand::End);
                     });
+                } else {
+                    let id = h.id();
+                    h.commands().get_entity(id).result()?.despawn_recursive();
+                }
+                DONE
+            });
+            h.edit("window::footer::end_game_button", |h| {
+                if localgame.is_running() {
+                    h.on_pressed(
+                        |mut c: Commands,
+                         sender: Res<Sender<CommandInput>>,
+                         mut state: ResMut<NextState<ClientState>>| {
+                            let _ = sender.send(CommandInput::EndGame);
+                            state.set(ClientState::End);
+                            c.react().broadcast(CloseSettings);
+                        },
+                    );
                 } else {
                     let id = h.id();
                     h.commands().get_entity(id).result()?.despawn_recursive();

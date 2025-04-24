@@ -1,5 +1,5 @@
 #import
-game.zsort as zsort
+client.zsort as zsort
 
 #scenes
 "overlay"
