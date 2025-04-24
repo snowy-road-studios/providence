@@ -56,7 +56,7 @@ pub fn make_prov_game_configs(
     // game framework config
     let tps = configs.get_integer("game", "TICKS_PER_SEC")?;
     let max_init_ticks = configs.get_integer::<u32>("game", "MAX_INIT_DURATION_SECS")? * tps;
-    let end_ticks = 0;
+    let end_ticks = (configs.get_integer::<u32>("game", "END_DURATION_MILLIS")? * tps) / 1000;
     let game_fw_config = GameFwConfig::new(tps, max_init_ticks, end_ticks);
 
     // game duration config
