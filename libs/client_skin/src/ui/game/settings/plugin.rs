@@ -23,7 +23,7 @@ fn add_menu_button(
         h.get("text").update_text(name);
         let scene: SceneRef = scene.into();
         h.on_select(move |mut c: Commands, mut s: SceneBuilder| {
-            c.get_entity(content_id).result()?.despawn_descendants();
+            c.get_entity(content_id)?.despawn_related::<Children>();
             c.ui_builder(content_id)
                 .spawn_scene(scene.clone(), &mut s, callback);
             DONE
@@ -43,17 +43,17 @@ fn build_settings(mut c: Commands, mut s: SceneBuilder, localgame: Res<LocalGame
             h.apply(DisplayControl::Hide);
 
             h.reactor(broadcast::<OpenSettings>(), |id: TargetId, mut c: Commands| {
-                c.get_entity(*id).result()?.apply(DisplayControl::Show);
+                c.get_entity(*id)?.apply(DisplayControl::Show);
                 DONE
             });
             h.reactor(broadcast::<CloseSettings>(), |id: TargetId, mut c: Commands| {
-                c.get_entity(*id).result()?.apply(DisplayControl::Hide);
+                c.get_entity(*id)?.apply(DisplayControl::Hide);
                 DONE
             });
             h.reactor(
                 broadcast::<ToggleSettings>(),
                 |id: TargetId, mut c: Commands, control: Query<&DisplayControl>| {
-                    let mut ec = c.get_entity(*id).result()?;
+                    let mut ec = c.get_entity(*id)?;
                     match control.get(*id).copied() {
                         Ok(DisplayControl::Show) => {
                             ec.apply(DisplayControl::Hide);
@@ -120,7 +120,7 @@ fn build_settings(mut c: Commands, mut s: SceneBuilder, localgame: Res<LocalGame
                     });
                 } else {
                     let id = h.id();
-                    h.commands().get_entity(id).result()?.despawn_recursive();
+                    h.commands().get_entity(id)?.despawn();
                 }
                 DONE
             });
@@ -137,7 +137,7 @@ fn build_settings(mut c: Commands, mut s: SceneBuilder, localgame: Res<LocalGame
                     );
                 } else {
                     let id = h.id();
-                    h.commands().get_entity(id).result()?.despawn_recursive();
+                    h.commands().get_entity(id)?.despawn();
                 }
                 DONE
             });

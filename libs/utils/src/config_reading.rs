@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
+use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
-use bevy::utils::HashMap;
 
 //-------------------------------------------------------------------------------------------------------------------
 

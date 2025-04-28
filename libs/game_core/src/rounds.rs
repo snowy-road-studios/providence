@@ -104,6 +104,8 @@ impl Plugin for GameRoundPlugin
     fn build(&self, app: &mut App)
     {
         app.init_resource::<GameRound>()
+            .init_schedule(RoundEnd)
+            .init_schedule(RoundStart)
             .configure_sets(Update, (RoundEndSet, RoundStartSet).in_set(GameSet::Play))
             .add_systems(OnEnter(GameState::TileSelect), handle_start_tileselect)
             .add_systems(Update, try_end_round.in_set(RoundEndSet))

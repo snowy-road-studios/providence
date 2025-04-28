@@ -10,12 +10,9 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["bevy/dynamic_linking", "wiring_game_instance/dev", "game_core/dev"]
+dev = ["wiring_game_instance/dev"]
 
 [dependencies]
-bevy               = { workspace = true }
-bevy_cobweb        = { workspace = true }
-bevy_simplenet     = { workspace = true }
 clap               = { workspace = true, features = ["derive"] }
 enfync             = { workspace = true }
 renet2_setup       = { workspace = true, features = ["netcode"] }
@@ -28,7 +25,6 @@ bevy_girk_game_fw = { workspace = true }
 bevy_girk_game_instance = { workspace = true, features = ["process"] }
 bevy_girk_utils = { workspace = true }
 
-game_core            = { path = "../../libs/game_core", default-features = false }
 utils                = { path = "../../libs/utils", default-features = false }
 wiring_backend       = { path = "../../libs/wiring_backend", default-features = false }
 wiring_game_instance = { path = "../../libs/wiring_game_instance", default-features = false }

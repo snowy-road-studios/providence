@@ -15,7 +15,7 @@ fn handle_client_connect(
     mut sender: GameSender,
 )
 {
-    let Ok(id) = ids.get(event.entity()) else { return };
+    let Ok(id) = ids.get(event.target()) else { return };
     let client_id = id.get();
 
     match **state {
