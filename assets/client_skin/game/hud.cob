@@ -11,11 +11,8 @@ client.zsort as zsort
         FlexNode{width:100% height:25px flex_direction:Row justify_cross:FlexStart justify_main:FlexStart}
         Picking::Ignore
 
-        "name_shim"
-            AbsoluteNode{width:100% height:100% justify_main:Center justify_cross:Center}
-
-            "name"
-                TextLine{size:25}
+        "name"
+            TextLine{size:25}
 
         ""
             FlexNode{flex_grow:1}

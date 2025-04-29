@@ -21,6 +21,16 @@ fn main()
         .with_default_directive(tracing_subscriber::filter::LevelFilter::INFO.into())
         .from_env()
         .unwrap();
+    #[cfg(feature = "dev")]
+    let filter = filter
+        .add_directive("renet2=info".parse().unwrap())
+        .add_directive("renet2_netcode=info".parse().unwrap())
+        .add_directive("renetcode2=info".parse().unwrap())
+        .add_directive("bevy_girk_host_server=trace".parse().unwrap())
+        .add_directive("bevy_girk_game_hub_server=trace".parse().unwrap())
+        .add_directive("bevy_girk_wiring=trace".parse().unwrap())
+        .add_directive("game_core=trace".parse().unwrap())
+        .add_directive("bevy_girk_game_fw=trace".parse().unwrap());
     tracing_subscriber::FmtSubscriber::builder()
         .with_env_filter(filter)
         .with_writer(std::io::stderr)

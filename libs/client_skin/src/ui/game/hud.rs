@@ -8,7 +8,7 @@ use crate::*;
 
 fn edit_header(h: &mut UiSceneHandle)
 {
-    h.get("name_shim::name")
+    h.get("name")
         .update(|id: TargetId, mut e: TextEditor, context: Res<ClientContext>| {
             match context.client_type() {
                 ClientType::Player => write_text!(e, *id, "player{}", context.id()),
@@ -18,29 +18,53 @@ fn edit_header(h: &mut UiSceneHandle)
         h.get("timer")
             .update_on(
                 broadcast::<AppUpdateEnd>(),
-                |id: TargetId, mut e: TextEditor, state: Res<State<ClientState>>, tileselect: Res<TileSelectTimer>, round: Res<RoundTimer>| {
+                |
+                    id: TargetId,
+                    mut e: TextEditor,
+                    state: Res<State<ClientState>>,
+                    tileselect: Res<TileSelectTimer>,
+                    round: Res<RoundTimer>
+                | {
                     match state.get() {
-                        ClientState::TileSelect => write_text!(e, *id, "{:.0}", tileselect.remaining_time().as_secs_f32().ceil()),
-                        ClientState::Play => write_text!(e, *id, "{:.0}", round.remaining_time().as_secs_f32().ceil()),
-                        ClientState::End => write_text!(e, *id, "--"),
-                        _ => false
-                    };
+                        ClientState::TileSelect => {
+                            write_text!(e, *id, "{}", tileselect.remaining_time().as_secs());
+                        }
+                        ClientState::Play => {
+                            write_text!(e, *id, "{}", round.remaining_time().as_secs());
+                        }
+                        ClientState::End => {
+                            write_text!(e, *id, "--");
+                        }
+                        _ => ()
+                    }
                 }
             );
         h.get("round")
             .update_on(
                 broadcast::<AppUpdateEnd>(),
-                |id: TargetId, mut e: TextEditor, state: Res<State<ClientState>>, round: Res<RoundTimer>, ctx: Res<ClientContext>| {
+                |
+                    id: TargetId,
+                    mut e: TextEditor,
+                    state: Res<State<ClientState>>,
+                    round: Res<RoundTimer>,
+                    ctx: Res<ClientContext>
+                | {
                     let paused = match round.is_paused() {
                         true => " -- PAUSED",
                         false => ""
                     };
                     match state.get() {
-                        ClientState::TileSelect => write_text!(e, *id, "Tile Selection{paused}"),
-                        ClientState::Play => write_text!(e, *id, "Round {} / {}{paused}", round.round(), ctx.duration_config().num_rounds),
-                        ClientState::End => write_text!(e, *id, "End"),
-                        _ => false
-                    };
+                        ClientState::TileSelect => {
+                            write_text!(e, *id, "Tile Selection{paused}");
+                        }
+                        ClientState::Play => {
+                            write_text!(e, *id, "Round {} / {}{paused}", round.round(), ctx.duration_config().num_rounds);
+                        }
+                        ClientState::End => {
+                            write_text!(e, *id, "End");
+                        }
+                        _ => ()
+                    }
                 }
             );
     });

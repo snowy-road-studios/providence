@@ -72,7 +72,7 @@ impl GameDurationConfig
             .saturating_sub(self.tile_select_duration_ms as u128);
         let round_time_ms = self.round_duration_ms.max(1) as u128;
         let rounds_complete = play_time_ms / round_time_ms;
-        let remaining_ms = play_time_ms % round_time_ms;
+        let remaining_ms = round_time_ms.saturating_sub(play_time_ms % round_time_ms);
 
         if rounds_complete as u32 == self.num_rounds {
             return Some((self.num_rounds + 1, 0));

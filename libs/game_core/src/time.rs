@@ -83,7 +83,7 @@ impl GameTime
     pub(crate) fn unpause(&mut self)
     {
         self.paused = false;
-        self.add_timeskip(self.pause_elapsed);
+        self.start_time = self.start_time.saturating_add(self.pause_elapsed);
         self.pause_elapsed = Duration::default();
     }
 
