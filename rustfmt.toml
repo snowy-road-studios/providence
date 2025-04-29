@@ -1,4 +1,5 @@
 unstable_features = true
+style_edition = "2021"
 
 brace_style = "AlwaysNextLine"
 control_brace_style = "AlwaysSameLine"

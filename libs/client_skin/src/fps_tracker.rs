@@ -5,6 +5,8 @@ use bevy::prelude::*;
 use bevy::time::TimeSystem;
 use bevy_cobweb::prelude::*;
 
+use crate::*;
+
 //-------------------------------------------------------------------------------------------------------------------
 
 //todo: pass by value on construction
@@ -116,7 +118,12 @@ impl Plugin for FpsTrackerPlugin
     fn build(&self, app: &mut App)
     {
         app.insert_react_resource(FpsTracker::new(FPS_TRACKER_NUM_RECORDS))
-            .configure_sets(First, FpsTrackerSet.after(TimeSystem))
+            .configure_sets(
+                First,
+                FpsTrackerSet
+                    .after(TimeSystem)
+                    .run_if(in_state(ClientAppState::Game)),
+            )
             .add_systems(First, update_fps_tracker.in_set(FpsTrackerSet));
     }
 }

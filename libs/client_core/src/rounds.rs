@@ -1,7 +1,10 @@
 use std::time::Duration;
 
 use bevy::prelude::*;
+use utils::*;
 use wasm_timer::{SystemTime, UNIX_EPOCH};
+
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -131,6 +134,11 @@ impl RoundTimer
     {
         self.round
     }
+
+    pub fn is_paused(&self) -> bool
+    {
+        self.paused
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -141,8 +149,8 @@ impl Plugin for RoundsPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.init_resource::<TileSelectTimer>()
-            .init_resource::<RoundTimer>();
+        app.reinit_resource_on_enter::<TileSelectTimer>(ClientAppState::Game)
+            .reinit_resource_on_enter::<RoundTimer>(ClientAppState::Game);
     }
 }
 

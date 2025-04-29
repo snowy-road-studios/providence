@@ -2413,6 +2413,7 @@ dependencies = [
  "game_core",
  "serde",
  "tracing",
+ "utils",
  "wasm-timer",
  "wiring_game_instance",
 ]

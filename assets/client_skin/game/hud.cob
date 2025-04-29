@@ -20,6 +20,17 @@ client.zsort as zsort
         ""
             FlexNode{flex_grow:1}
 
+        "round_info"
+            "timer"
+                TextLine{size:20}
+            ""
+                FlexNode{width:10px}
+            "round"
+                TextLine{size:20}
+
+        ""
+            FlexNode{flex_grow:1}
+
         "fps"
             FlexNode{width:65px justify_self_cross:FlexEnd}
 

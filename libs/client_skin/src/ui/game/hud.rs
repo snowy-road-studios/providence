@@ -14,6 +14,36 @@ fn edit_header(h: &mut UiSceneHandle)
                 ClientType::Player => write_text!(e, *id, "player{}", context.id()),
             };
         });
+    h.edit("round_info", |h| {
+        h.get("timer")
+            .update_on(
+                broadcast::<AppUpdateEnd>(),
+                |id: TargetId, mut e: TextEditor, state: Res<State<ClientState>>, tileselect: Res<TileSelectTimer>, round: Res<RoundTimer>| {
+                    match state.get() {
+                        ClientState::TileSelect => write_text!(e, *id, "{:.0}", tileselect.remaining_time().as_secs_f32().ceil()),
+                        ClientState::Play => write_text!(e, *id, "{:.0}", round.remaining_time().as_secs_f32().ceil()),
+                        ClientState::End => write_text!(e, *id, "--"),
+                        _ => false
+                    };
+                }
+            );
+        h.get("round")
+            .update_on(
+                broadcast::<AppUpdateEnd>(),
+                |id: TargetId, mut e: TextEditor, state: Res<State<ClientState>>, round: Res<RoundTimer>, ctx: Res<ClientContext>| {
+                    let paused = match round.is_paused() {
+                        true => " -- PAUSED",
+                        false => ""
+                    };
+                    match state.get() {
+                        ClientState::TileSelect => write_text!(e, *id, "Tile Selection{paused}"),
+                        ClientState::Play => write_text!(e, *id, "Round {} / {}{paused}", round.round(), ctx.duration_config().num_rounds),
+                        ClientState::End => write_text!(e, *id, "End"),
+                        _ => false
+                    };
+                }
+            );
+    });
     h.get("fps::text").update_on(
         resource_mutation::<FpsTracker>(),
         |id: TargetId, mut next_time: Local<u64>, mut e: TextEditor, fps: ReactRes<FpsTracker>| {
