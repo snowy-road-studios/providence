@@ -171,6 +171,7 @@ fn config_paths() -> Vec<PathBuf>
     paths.push("frontend/host_frontend.toml".into());
     paths.push("frontend/lobby.toml".into());
     paths.push("game/game.toml".into());
+    paths.push("game/hq.toml".into());
 
     paths
 }

@@ -36,6 +36,7 @@ bevy_simplenet = { version = "0.16", default-features = false }
 #bevy_simplenet = { git = "https://github.com/UkoeHB/bevy_simplenet", rev = "4abc765", default-features = false }
 #iyes_progress = { version = "0.13" , features = [ "assets" ] }
 iyes_progress = { git = "https://github.com/UkoeHB/iyes_progress", rev = "4055b86", features = [ "assets" ] }
+bevy_121 = { version = "0.1", default-features = false }
 
 bevy_girk_backend_public    = { git = "https://github.com/UkoeHB/bevy_girk", rev = "8880905" }
 bevy_girk_client_fw         = { git = "https://github.com/UkoeHB/bevy_girk", rev = "8880905" }

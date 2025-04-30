@@ -8,6 +8,7 @@ use bevy::prelude::*;
 #[derive(Resource, Default)]
 pub struct RootConfigs
 {
+    /// [filename : [config key : config value]]
     inner: HashMap<String, HashMap<String, toml::value::Value>>,
 }
 
@@ -81,7 +82,7 @@ impl RootConfigs
         Ok(())
     }
 
-    pub fn get(&self, context: &str, key: &str) -> Result<&toml::value::Value, String>
+    pub fn get_value(&self, context: &str, key: &str) -> Result<&toml::value::Value, String>
     {
         let ctx_map = self
             .inner
@@ -97,7 +98,7 @@ impl RootConfigs
         <T as TryFrom<i64>>::Error: std::fmt::Debug,
     {
         let val = self
-            .get(context, key)?
+            .get_value(context, key)?
             .as_integer()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not integer"))?;
         T::try_from(val)
@@ -106,42 +107,42 @@ impl RootConfigs
 
     pub fn get_float(&self, context: &str, key: &str) -> Result<f64, String>
     {
-        self.get(context, key)?
+        self.get_value(context, key)?
             .as_float()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not float"))
     }
 
     pub fn get_bool(&self, context: &str, key: &str) -> Result<bool, String>
     {
-        self.get(context, key)?
+        self.get_value(context, key)?
             .as_bool()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not bool"))
     }
 
     pub fn get_str(&self, context: &str, key: &str) -> Result<&str, String>
     {
-        self.get(context, key)?
+        self.get_value(context, key)?
             .as_str()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not str"))
     }
 
     pub fn get_datetime(&self, context: &str, key: &str) -> Result<&toml::value::Datetime, String>
     {
-        self.get(context, key)?
+        self.get_value(context, key)?
             .as_datetime()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not datetime"))
     }
 
     pub fn get_array(&self, context: &str, key: &str) -> Result<&Vec<toml::value::Value>, String>
     {
-        self.get(context, key)?
+        self.get_value(context, key)?
             .as_array()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not array"))
     }
 
     pub fn get_table(&self, context: &str, key: &str) -> Result<&toml::value::Table, String>
     {
-        self.get(context, key)?
+        self.get_value(context, key)?
             .as_table()
             .ok_or_else(|| format!("config lookup failed for {context}::{key}; value not table"))
     }

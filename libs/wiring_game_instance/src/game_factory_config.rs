@@ -16,9 +16,10 @@ use utils::RootConfigs;
 pub struct ProvGameFactoryConfig
 {
     pub server_setup_config: GameServerSetupConfig,
+    pub resend_time: Duration,
     pub game_fw_config: GameFwConfig,
     pub duration_config: GameDurationConfig,
-    pub resend_time: Duration,
+    pub building_data: BuildingData,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -66,12 +67,18 @@ pub fn make_prov_game_configs(
         num_rounds: configs.get_integer("game", "NUM_ROUNDS")?,
     };
 
+    // building configs
+    let hq_levels =
+        HqLevels::deserialize(configs.get_value("hq", "LEVELS")?.clone()).map_err(|err| format!("{err:?}"))?;
+    let building_data = BuildingData { hq: hq_levels };
+
     // prov game factory config
     let game_factory_config = ProvGameFactoryConfig {
         server_setup_config,
+        resend_time: Duration::from_millis(configs.get_integer("game", "RENET2_RESEND_TIME_MILLIS")?),
         game_fw_config,
         duration_config,
-        resend_time: Duration::from_millis(configs.get_integer("game", "RENET2_RESEND_TIME_MILLIS")?),
+        building_data,
     };
 
     Ok(game_factory_config)
