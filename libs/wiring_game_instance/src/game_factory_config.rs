@@ -19,7 +19,7 @@ pub struct ProvGameFactoryConfig
     pub resend_time: Duration,
     pub game_fw_config: GameFwConfig,
     pub duration_config: GameDurationConfig,
-    pub building_data: BuildingData,
+    pub game_data: GameData,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -68,9 +68,7 @@ pub fn make_prov_game_configs(
     };
 
     // building configs
-    let hq_levels =
-        HqLevels::deserialize(configs.get_value("hq", "LEVELS")?.clone()).map_err(|err| format!("{err:?}"))?;
-    let building_data = BuildingData { hq: hq_levels };
+    let game_data = GameData::new(configs)?;
 
     // prov game factory config
     let game_factory_config = ProvGameFactoryConfig {
@@ -78,7 +76,7 @@ pub fn make_prov_game_configs(
         resend_time: Duration::from_millis(configs.get_integer("game", "RENET2_RESEND_TIME_MILLIS")?),
         game_fw_config,
         duration_config,
-        building_data,
+        game_data,
     };
 
     Ok(game_factory_config)

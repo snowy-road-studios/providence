@@ -24,3 +24,5 @@ tracing                  = { workspace = true }
 
 bevy_girk_game_fw = { workspace = true }
 bevy_girk_utils   = { workspace = true }
+
+utils = { path = "../utils", default-features = false }

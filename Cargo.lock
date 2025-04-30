@@ -3614,6 +3614,7 @@ dependencies = [
  "bevy_girk_game_instance",
  "bevy_girk_utils",
  "clap",
+ "game_core",
  "renet2_setup",
  "tracing",
  "tracing-subscriber",
@@ -3633,6 +3634,7 @@ dependencies = [
  "renet2",
  "serde",
  "tracing",
+ "utils",
 ]
 
 [[package]]
@@ -5508,6 +5510,7 @@ dependencies = [
  "bevy_girk_utils",
  "clap",
  "enfync",
+ "game_core",
  "renet2_setup",
  "serde_json",
  "tokio",

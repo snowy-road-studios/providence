@@ -5,6 +5,7 @@ use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
+use game_core::GameData;
 use renet2_setup::ConnectionType;
 use utils::RootConfigs;
 use wiring_backend::*;
@@ -82,6 +83,7 @@ fn run_playtest(
     let renet2_client_resend_time: u64 = configs
         .get_integer("game_client", "RENET2_RESEND_TIME_MILLIS")
         .unwrap();
+    let game_data = GameData::new(configs).unwrap();
 
     // launch game
     tracing::trace!("launching game instance for playtest");
@@ -129,10 +131,15 @@ fn run_playtest(
                 continue;
             };
 
+            let Ok(game_data_ser) = serde_json::to_string(&game_data) else {
+                tracing::error!(game_id, "failed serializing renet2 game data for playtest game client");
+                continue;
+            };
+
             tracing::trace!(start_info.client_id, "launching game client for playtest");
 
             let Ok(child_process) = tokio::process::Command::new(&game_client_path)
-                .args(["-T", &token_ser, "-S", &start_info_ser, "-R", &resend_time_ser])
+                .args(["-T", &token_ser, "-S", &start_info_ser, "-R", &resend_time_ser, "-D", &game_data_ser])
                 .spawn()
             else {
                 tracing::error!("failed launching game client for playtest at {:?}", game_client_path);

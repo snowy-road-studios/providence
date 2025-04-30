@@ -8,6 +8,7 @@ use bevy_girk_wiring_client::{
 };
 use client_core::ClientCorePlugin;
 use client_skin::ClientSkinPlugin;
+use game_core::GameData;
 use renet2_setup::{ClientConnectPack, ServerConnectToken};
 use wiring_game_instance::*;
 
@@ -24,6 +25,7 @@ pub struct ProvClientFactory
 {
     pub protocol_id: u64,
     pub resend_time: Duration,
+    pub game_data: Option<GameData>,
 }
 
 impl ClientFactoryImpl for ProvClientFactory
@@ -33,6 +35,9 @@ impl ClientFactoryImpl for ProvClientFactory
     /// Note: does not set up the user client, which is considered a semi-unrelated 'shell'
     fn add_plugins(&mut self, app: &mut App)
     {
+        // add game data from configs
+        self.game_data.take().unwrap().insert(app.world_mut());
+
         // girk client config
         let config = GirkClientStartupConfig { resend_time: self.resend_time };
 

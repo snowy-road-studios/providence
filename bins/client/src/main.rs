@@ -274,6 +274,7 @@ fn main()
                 .get_integer("game_client", "RENET2_RESEND_TIME_MILLIS")
                 .unwrap(),
         ),
+        game_data: Some(GameData::new(&configs).unwrap()),
     };
 
     // build and launch the bevy app

@@ -1,6 +1,9 @@
+use bevy::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::*;
+
+//-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct HqLevel
@@ -9,5 +12,9 @@ pub struct HqLevel
     pub cost: ResourceCost,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Serialize, Deserialize, Debug, Clone, Deref)]
 pub struct HqLevels(pub Vec<HqLevel>);
+
+//-------------------------------------------------------------------------------------------------------------------

@@ -177,7 +177,7 @@ impl GameFactoryImpl for ProvGameFactory
 
         // prepare game app
         let metas = prepare_girk_game_app(app, server_config)?;
-        prepare_game_app_core(app, startup.prov_init);
+        prepare_game_app_core(app, startup.prov_init, config.game_data);
 
         Ok(GameStartReport { metas, start_infos: startup.start_infos })
     }

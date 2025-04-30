@@ -9,6 +9,7 @@ use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::GameStartInfo;
 use bevy_girk_utils::*;
 use clap::Parser;
+use game_core::GameData;
 use renet2_setup::ServerConnectToken;
 use wiring_client_instance::*;
 
@@ -26,6 +27,9 @@ struct GameClientCli
     /// renet2 resend time in milliseconds.
     #[arg(short = 'R', value_parser = parse_json::<u64>)]
     renet2_resend_time_millis: u64,
+    /// renet2 resend time in milliseconds.
+    #[arg(short = 'D', value_parser = parse_json::<GameData>)]
+    game_data: Option<GameData>,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -73,14 +77,16 @@ fn main()
 
     // cli
     let args = GameClientCli::parse();
-    let token: Option<ServerConnectToken> = args.token;
-    let start_info: Option<GameStartInfo> = args.start_info;
+    let token = args.token;
+    let start_info = args.start_info;
+    let game_data = args.game_data;
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
     let factory = ProvClientFactory {
         protocol_id,
         resend_time: Duration::from_millis(args.renet2_resend_time_millis),
+        game_data,
     };
 
     let mut app = App::new();

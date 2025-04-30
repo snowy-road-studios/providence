@@ -1,6 +1,3 @@
-levels = [
-    {
-        ownable_tiles = 5,
-        cost = { food = 0, wood = 0, stone = 0, iron = 0 }
-    }
-]
+[[LEVELS]]
+ownable_tiles = 5
+cost = { food = 0, wood = 0, stone = 0, iron = 0 }
