@@ -13,7 +13,7 @@ impl GameRand
 {
     pub fn new(seed: u128) -> GameRand
     {
-        GameRand(Rand64::new("bevy_girk_demo", seed))
+        GameRand(Rand64::new("providence", seed))
     }
 
     pub fn next(&mut self) -> u64

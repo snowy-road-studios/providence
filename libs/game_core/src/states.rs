@@ -20,7 +20,7 @@ fn update_game_state(
     }
 
     // get expected state based on elapsed ticks
-    let duration_config = game_ctx.duration_config();
+    let duration_config = game_ctx.duration_config;
     let new_game_state = duration_config.expected_state(game_time.elapsed());
 
     // update the game state
@@ -49,7 +49,7 @@ fn set_game_end_flag(
 
     // build game over report
     let game_over_report = ProvGameOverReport {
-        game_id: ctx.game_id(),
+        game_id: ctx.game_id,
         game_duration_ms: game_time.elapsed().as_millis(),
         rounds: **round,
         player_reports,

@@ -1,11 +1,11 @@
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Resource, Debug, Serialize, Deserialize, Clone)]
+#[derive(Resource, Debug, Deserialize, Clone)]
 pub struct BuildingData
 {
     pub hq: HqLevels,

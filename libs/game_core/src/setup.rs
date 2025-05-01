@@ -16,7 +16,7 @@ fn setup_game(world: &mut World)
         .expect("ProvGameInitializer missing on startup");
 
     // resources
-    world.insert_resource::<GameRand>(GameRand::new(initializer.game_context.seed()));
+    world.insert_resource::<GameRand>(GameRand::new(initializer.game_context.seed));
     world.insert_resource(initializer.game_context);
 
     // players

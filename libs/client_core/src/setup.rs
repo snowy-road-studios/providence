@@ -10,7 +10,7 @@ use crate::*;
 fn check_client_framework_consistency(client_fw_config: &ClientFwConfig, initializer: &ClientInitializer)
 {
     // check the client id
-    if client_fw_config.client_id() != initializer.context.id() {
+    if client_fw_config.client_id() != initializer.context.client_id {
         tracing::error!("client id mismatch with client framework on game startup!");
     }
 }

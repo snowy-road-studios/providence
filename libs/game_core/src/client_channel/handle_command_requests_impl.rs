@@ -17,7 +17,7 @@ pub(crate) fn handle_command_input(
     match input {
         CommandInput::NextRound => {
             let gametime = world.resource::<GameTime>().elapsed();
-            let duration_config = world.resource::<GameContext>().duration_config();
+            let duration_config = world.resource::<GameContext>().duration_config;
             let remaining_ms = if let Some(remaining_ms) = duration_config.select_remaining_ms(gametime) {
                 remaining_ms
             } else if let Some((_, remaining_ms)) = duration_config.round_and_remaining_ms(gametime) {

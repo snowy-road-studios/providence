@@ -37,7 +37,7 @@ fn main()
         .init();
 
     // make game factory
-    let game_factory = GameFactory::new(ProvGameFactory);
+    let game_factory = GameFactory::new(ProvGameFactory {});
 
     // launch the game
     let args = GameInstanceCli::parse();

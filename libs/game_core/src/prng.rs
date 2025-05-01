@@ -1,20 +1,14 @@
-use bevy::prelude::*;
-use serde::Deserialize;
-
-use crate::*;
+use bevy_girk_utils::Rand64;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct HqLevel
+const MAP_GEN: &'static str = "PROVIDENCE MAP GEN";
+
+//-------------------------------------------------------------------------------------------------------------------
+
+pub fn map_gen_prng(seed: u128) -> u64
 {
-    pub ownable_tiles: u16,
-    pub cost: ResourceCost,
+    Rand64::new(MAP_GEN, seed).next()
 }
-
-//-------------------------------------------------------------------------------------------------------------------
-
-#[derive(Deserialize, Debug, Clone, Deref)]
-pub struct HqLevels(pub Vec<HqLevel>);
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -29,4 +29,5 @@ bevy_girk_wiring_client   = { workspace = true, features = ["memory_transport"] 
 client_core          = { path = "../client_core", default-features = false }
 client_skin          = { path = "../client_skin", default-features = false }
 game_core            = { path = "../game_core", default-features = false, features = ["commands"] }
+utils                = { path = "../utils", default-features = false }
 wiring_game_instance = { path = "../wiring_game_instance", default-features = false }

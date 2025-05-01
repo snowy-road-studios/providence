@@ -19,35 +19,14 @@ pub enum ClientType
 pub struct ClientContext
 {
     /// This client's id
-    client_id: ClientId,
+    pub client_id: ClientId,
     /// This client's type.
-    client_type: ClientType,
+    pub client_type: ClientType,
 
     /// The game duration config.
-    duration_config: GameDurationConfig,
-}
-
-impl ClientContext
-{
-    /// New context
-    pub fn new(client_id: ClientId, client_type: ClientType, duration_config: GameDurationConfig)
-        -> ClientContext
-    {
-        ClientContext { client_id, client_type, duration_config }
-    }
-
-    pub fn id(&self) -> ClientId
-    {
-        self.client_id
-    }
-    pub fn client_type(&self) -> ClientType
-    {
-        self.client_type
-    }
-    pub fn duration_config(&self) -> &GameDurationConfig
-    {
-        &self.duration_config
-    }
+    pub duration_config: GameDurationConfig,
+    /// PRNG for generating the map deterministically.
+    pub map_gen_prng: u64,
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 use std::str::FromStr;
-use std::time::Duration;
 
 use bevy::prelude::*;
 use bevy_girk_backend_public::*;
@@ -9,7 +8,7 @@ use bevy_girk_game_instance::GameFactory;
 use bevy_girk_utils::Rand64;
 use clap::Parser;
 use user_client::*;
-use utils::RootConfigs;
+use utils::{ConfigDirectories, RootConfigs};
 use wasm_timer::{SystemTime, UNIX_EPOCH};
 use wiring_client_instance::ProvClientFactory;
 use wiring_game_instance::ProvGameFactory;
@@ -25,20 +24,6 @@ fn timer_configs(configs: &RootConfigs) -> Result<TimerConfigs, String>
         ack_request_timer_buffer_ms: configs.get_integer("user_client", "ACK_TIMER_BUFFER_MILLIS")?,
         lobby_list_refresh_ms: configs.get_integer("user_client", "LOBBY_LIST_REFRESH_MILLIS")?,
     })
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn config_paths() -> Vec<PathBuf>
-{
-    let mut paths = Vec::default();
-    paths.push("frontend/host_frontend.toml".into());
-    paths.push("frontend/lobby.toml".into());
-    paths.push("game/game.toml".into());
-    paths.push("game_client/game_client.toml".into());
-    paths.push("user_client/user_client.toml".into());
-
-    paths
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -111,24 +96,19 @@ fn get_systime_millis() -> u128
 //-------------------------------------------------------------------------------------------------------------------
 
 const DEFAULT_CONFIG_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../config");
-#[cfg(feature = "dev")]
 const CONFIGS_OVERRIDE_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/config");
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[cfg(target_family = "wasm")]
-#[wasm_bindgen(main)]
-async fn main()
+fn sub_dirs() -> Vec<&'static str>
 {
-    // setup wasm tracing
-    console_error_panic_hook::set_once();
-    //tracing_wasm::set_as_global_default();
+    vec!["/client", "/frontend", "/game", "/user_client"]
+}
 
-    // cli args
-    let args = ClientCli::parse();
-    tracing::trace!(?args);
-    let args = args.extract();
+//-------------------------------------------------------------------------------------------------------------------
 
+fn run_app(args: ClientCliResolved, configs: RootConfigs, config_dirs: ConfigDirectories)
+{
     //TODO: use hasher directly?
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
 
@@ -136,14 +116,6 @@ async fn main()
     let host = if args.host_is_wss { "wss" } else { "ws" };
     let url = format!("{host}://{}/ws", args.server_addr.as_str());
     tracing::info!("connecting to host server: {}", url.as_str());
-
-    // extract configs
-    let mut configs = RootConfigs::default();
-    configs.read(args.config_dir, config_paths()).unwrap();
-    #[cfg(feature = "dev")]
-    configs
-        .read(CONFIGS_OVERRIDE_DIR.into(), config_paths())
-        .unwrap();
 
     // prep to launch client
     // - todo: receive URL from HTTP(s) server, and load the HTTP(s) URL from an asset
@@ -161,30 +133,59 @@ async fn main()
         )
     };
 
-    // timer configs for the user client (TEMPORARY: use asset instead ?)
+    // timer configs for the user client
     let timer_configs = timer_configs(&configs).unwrap();
 
-    // factory for local-player games
-    let game_factory = GameFactory::new(ProvGameFactory);
-
     // client factory for setting up games
-    let factory = ProvClientFactory {
-        protocol_id,
-        resend_time: Duration::from_millis(
-            configs
-                .get_integer("game_client", "RENET2_RESEND_TIME_MILLIS")
-                .unwrap(),
-        ),
-    };
+    let client_factory = ProvClientFactory::new(protocol_id, &configs).unwrap();
+
+    // factory for local-player games
+    #[cfg(not(target_family = "wasm"))]
+    let game_factory = GameFactory::new(ProvGameFactory {});
+    #[cfg(target_family = "wasm")]
+    let game_factory = GameFactory::new(ProvGameFactory { configs });
 
     // build and launch the bevy app
     App::new()
-        .add_plugins(ClientInstancePlugin::new(factory, Some(game_factory)))
+        .add_plugins(ClientInstancePlugin::new(client_factory, Some(game_factory)))
         .insert_resource(HostClientConstructor::new(make_client))
         .insert_resource(timer_configs)
-        .insert_resource(configs)
+        .insert_resource(config_dirs)
         .add_plugins(ProvUserClientPlugin)
         .run();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+#[cfg(target_family = "wasm")]
+#[wasm_bindgen(main)]
+async fn main()
+{
+    // setup wasm tracing
+    console_error_panic_hook::set_once();
+    //tracing_wasm::set_as_global_default();
+
+    // cli args
+    let args = ClientCli::parse();
+    tracing::trace!(?args);
+    let args = args.extract();
+
+    // extract configs
+    let config_dirs = ConfigDirectories {
+        main_dir: args.config_dir,
+        override_dir: CONFIGS_OVERRIDE_DIR.into(),
+    };
+    let sub_dirs = sub_dirs();
+    #[cfg(not(feature = "dev"))]
+    let configs = RootConfigs::new(&config_dirs.main_dir, &sub_dirs)
+        .await
+        .unwrap();
+    #[cfg(feature = "dev")]
+    let configs = RootConfigs::new_with_overrides(&config_dirs.main_dir, &config_dirs.override_dir, &sub_dirs)
+        .await
+        .unwrap();
+
+    run_app(args, configs, config_dirs);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -228,63 +229,20 @@ fn main()
         let _ = rustls::crypto::ring::default_provider().install_default();
     }
 
-    //TODO: use hasher directly?
-    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-
-    // make URL
-    let host = if args.host_is_wss { "wss" } else { "ws" };
-    let url = format!("{host}://{}/ws", args.server_addr.as_str());
-    tracing::info!("connecting to host server: {}", url.as_str());
-
     // extract configs
-    let mut configs = RootConfigs::default();
-    configs.read(args.config_dir, config_paths()).unwrap();
+    let config_dirs = ConfigDirectories {
+        main_dir: args.config_dir.clone(),
+        override_dir: CONFIGS_OVERRIDE_DIR.into(),
+    };
+    let sub_dirs = sub_dirs();
+
+    #[cfg(not(feature = "dev"))]
+    let configs = RootConfigs::new(&config_dirs.main_dir, &sub_dirs).unwrap();
     #[cfg(feature = "dev")]
-    configs
-        .read(CONFIGS_OVERRIDE_DIR.into(), config_paths())
-        .unwrap();
+    let configs =
+        RootConfigs::new_with_overrides(&config_dirs.main_dir, &config_dirs.override_dir, &sub_dirs).unwrap();
 
-    // prep to launch client
-    // - todo: receive URL from HTTP(s) server, and load the HTTP(s) URL from an asset
-    let client_id = args.client_id;
-    let make_client = move || {
-        host_user_client_factory().new_client(
-            enfync::builtin::Handle::default(), // automatically selects native/WASM runtime
-            // TODO: use auth server to get this?
-            url::Url::parse(url.as_str()).unwrap(),
-            // TODO: use auth tokens and an auth server
-            bevy_simplenet::AuthRequest::None { client_id },
-            bevy_simplenet::ClientConfig::default(),
-            // auto-detects connection type for games (udp/webtransport/websockets)
-            HostUserConnectMsg::new(),
-        )
-    };
-
-    // timer configs for the user client (TEMPORARY: use asset instead ?)
-    let timer_configs = timer_configs(&configs).unwrap();
-
-    // factory for local-player games
-    let game_factory = GameFactory::new(ProvGameFactory);
-
-    // client factory for setting up games
-    let factory = ProvClientFactory {
-        protocol_id,
-        resend_time: Duration::from_millis(
-            configs
-                .get_integer("game_client", "RENET2_RESEND_TIME_MILLIS")
-                .unwrap(),
-        ),
-        game_data: Some(GameData::new(&configs).unwrap()),
-    };
-
-    // build and launch the bevy app
-    App::new()
-        .add_plugins(ClientInstancePlugin::new(factory, Some(game_factory)))
-        .insert_resource(HostClientConstructor::new(make_client))
-        .insert_resource(timer_configs)
-        .insert_resource(configs)
-        .add_plugins(ProvUserClientPlugin)
-        .run();
+    run_app(args, configs, config_dirs);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

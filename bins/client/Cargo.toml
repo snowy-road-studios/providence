@@ -10,7 +10,7 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["user_client/dev", "wiring_client_instance/dev", "wiring_game_instance/dev"]
+dev = ["user_client/dev", "wiring_client_instance/dev", "wiring_game_instance/dev", "wiring_backend/dev"]
 
 [dependencies]
 bevy               = { workspace = true, default-features = true }

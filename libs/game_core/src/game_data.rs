@@ -1,12 +1,12 @@
 use bevy::prelude::*;
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use utils::RootConfigs;
 
 use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct GameData
 {
     pub buildings: BuildingData,
@@ -16,8 +16,8 @@ impl GameData
 {
     pub fn new(configs: &RootConfigs) -> Result<Self, String>
     {
-        let hq_levels =
-            HqLevels::deserialize(configs.get_value("hq", "LEVELS")?.clone()).map_err(|err| format!("{err:?}"))?;
+        let hq_levels = HqLevels::deserialize(configs.get_value("hq_data", "LEVELS")?.clone())
+            .map_err(|err| format!("{err:?}"))?;
         let buildings = BuildingData { hq: hq_levels };
 
         Ok(Self { buildings })

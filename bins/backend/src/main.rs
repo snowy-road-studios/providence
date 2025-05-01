@@ -133,7 +133,7 @@ fn make_test_host_hub_client_with_id(client_id: u128, hub_server_url: url::Url) 
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn make_test_game_hub_server(
+fn make_local_game_hub_server(
     game_instance_path: String,
     hub_server_url: url::Url,
     startup_pack: GameHubServerStartupPack,
@@ -159,21 +159,6 @@ fn make_test_game_hub_server(
     );
 
     (command_sender, server_app)
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn config_paths() -> Vec<PathBuf>
-{
-    let mut paths = Vec::default();
-    paths.push("backend/game_hub.toml".into());
-    paths.push("backend/host_backend.toml".into());
-    paths.push("frontend/host_frontend.toml".into());
-    paths.push("frontend/lobby.toml".into());
-    paths.push("game/game.toml".into());
-    paths.push("game/hq.toml".into());
-
-    paths
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -306,12 +291,14 @@ fn main()
     };
 
     // extract configs
-    let mut configs = RootConfigs::default();
-    configs.read(args.config_dir, config_paths()).unwrap();
+    let main_dir = args.config_dir;
+    let override_dir = CONFIGS_OVERRIDE_DIR.into();
+    let sub_dirs = ["/backend", "/frontend"];
+
+    #[cfg(not(feature = "dev"))]
+    let configs = RootConfigs::new(&main_dir, &sub_dirs).unwrap();
     #[cfg(feature = "dev")]
-    configs
-        .read(CONFIGS_OVERRIDE_DIR.into(), config_paths())
-        .unwrap();
+    let configs = RootConfigs::new_with_overrides(&main_dir, &override_dir, &sub_dirs).unwrap();
 
     // launch host server
     let (mut host_server, hub_server_url, host_user_url) = make_test_host_server(
@@ -325,10 +312,15 @@ fn main()
     std::thread::spawn(move || {
         // launch game hub server attached to host server
         let startup_pack = make_hub_server_configs(&configs).unwrap();
-        let game_factory_config =
-            make_prov_game_configs(args.local_ip, args.proxy_ip, args.ws_domain, args.wss_certs, &configs)
-                .unwrap();
-        let (_hub_command_sender, mut hub_server) = make_test_game_hub_server(
+        let game_factory_config = ProvGameFactoryConfig {
+            local_ip: args.local_ip,
+            proxy_ip: args.proxy_ip,
+            ws_domain: args.ws_domain,
+            wss_certs: args.wss_certs,
+            config_dir: main_dir,
+            config_override_dir: override_dir,
+        };
+        let (_hub_command_sender, mut hub_server) = make_local_game_hub_server(
             args.game_instance_path,
             hub_server_url,
             startup_pack,

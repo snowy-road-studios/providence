@@ -25,8 +25,8 @@ pub(crate) fn handle_player_inputs(world: &mut World)
     let state: ClientState = **state;
 
     let ctx = world.resource::<ClientContext>();
-    let client_id = ctx.id();
-    let is_player = ctx.client_type() == ClientType::Player;
+    let client_id = ctx.client_id;
+    let is_player = ctx.client_type == ClientType::Player;
     let is_playstate = state == ClientState::Play;
 
     let Some(inputs) = world.remove_resource::<Receiver<PlayerInput>>() else {

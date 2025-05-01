@@ -1,0 +1,4 @@
+FILES = [
+    "host_frontend.toml",
+    "lobby.toml",
+]

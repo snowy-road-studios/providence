@@ -1,7 +1,7 @@
 //! Independent client binary. Can be used to launch games directly from another binary without an intermediating
 //! user client.
 
-use std::time::Duration;
+use std::path::PathBuf;
 
 use bevy::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
@@ -9,8 +9,8 @@ use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::GameStartInfo;
 use bevy_girk_utils::*;
 use clap::Parser;
-use game_core::GameData;
 use renet2_setup::ServerConnectToken;
+use utils::RootConfigs;
 use wiring_client_instance::*;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -24,12 +24,30 @@ struct GameClientCli
     /// GameStartInfo
     #[arg(short = 'S', value_parser = parse_json::<GameStartInfo>)]
     start_info: Option<GameStartInfo>,
-    /// renet2 resend time in milliseconds.
-    #[arg(short = 'R', value_parser = parse_json::<u64>)]
-    renet2_resend_time_millis: u64,
-    /// renet2 resend time in milliseconds.
-    #[arg(short = 'D', value_parser = parse_json::<GameData>)]
-    game_data: Option<GameData>,
+    /// Location of config files.
+    #[arg(short = 'C', value_parser = parse_json::<String>)]
+    config_dir: Option<String>,
+}
+
+impl GameClientCli
+{
+    fn extract(self) -> GameClientCliResolved
+    {
+        let config_dir: PathBuf = self
+            .config_dir
+            .or_else(|| std::option_env!("PROV_CONFIG_DIR").map(|s| s.into()))
+            .unwrap_or_else(|| DEFAULT_CONFIG_DIR.into())
+            .into();
+
+        GameClientCliResolved { token: self.token, start_info: self.start_info, config_dir }
+    }
+}
+
+struct GameClientCliResolved
+{
+    token: Option<ServerConnectToken>,
+    start_info: Option<GameStartInfo>,
+    config_dir: PathBuf,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -45,6 +63,11 @@ fn start_game_system(
         c.queue(ClientInstanceCommand::Start(token, start_info));
     })
 }
+
+//-------------------------------------------------------------------------------------------------------------------
+
+const DEFAULT_CONFIG_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../config");
+const CONFIGS_OVERRIDE_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/config");
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -77,26 +100,29 @@ fn main()
 
     // cli
     let args = GameClientCli::parse();
-    let token = args.token;
-    let start_info = args.start_info;
-    let game_data = args.game_data;
+    let args = args.extract();
+
+    // extract configs
+    let sub_dirs = ["/client", "/game"];
+
+    #[cfg(not(feature = "dev"))]
+    let configs = RootConfigs::new(&args.config_dir, &sub_dirs).unwrap();
+    #[cfg(feature = "dev")]
+    let configs =
+        RootConfigs::new_with_overrides(&args.config_dir, &CONFIGS_OVERRIDE_DIR.into(), &sub_dirs).unwrap();
 
     // make client factory
     let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-    let factory = ProvClientFactory {
-        protocol_id,
-        resend_time: Duration::from_millis(args.renet2_resend_time_millis),
-        game_data,
-    };
+    let client_factory = ProvClientFactory::new(protocol_id, &configs).unwrap();
 
     let mut app = App::new();
-    app.add_plugins(ClientInstancePlugin::new(factory, None))
+    app.add_plugins(ClientInstancePlugin::new(client_factory, None))
         // Can't do this in OnEnter because it internally forces a state transition. State transitions can't be
         // executed recursively.
         // Can't do this in Update otherwise we might skip past ClientInitState::InProgress.
         .add_systems(
             PreUpdate,
-            start_game_system(token, start_info).run_if(in_state(ClientAppState::Client)),
+            start_game_system(args.token, args.start_info).run_if(in_state(ClientAppState::Client)),
         )
         .run();
 }

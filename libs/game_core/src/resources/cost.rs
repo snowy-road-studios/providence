@@ -1,6 +1,8 @@
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+//-------------------------------------------------------------------------------------------------------------------
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct ResourceCost
 {
     #[serde(default)]
@@ -14,3 +16,5 @@ pub struct ResourceCost
     #[serde(default)]
     pub iron: u64,
 }
+
+//-------------------------------------------------------------------------------------------------------------------

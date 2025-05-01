@@ -19,7 +19,7 @@ fn detect_game_end(
     mut state: ResMut<NextState<ClientState>>,
 )
 {
-    let dur_config = config.duration_config();
+    let dur_config = config.duration_config;
     if timer.round() < dur_config.num_rounds {
         return;
     }

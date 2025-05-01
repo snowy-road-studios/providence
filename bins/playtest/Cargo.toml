@@ -10,7 +10,7 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["wiring_game_instance/dev"]
+dev = ["game_core/dev", "wiring_game_instance/dev", "wiring_backend/dev"]
 
 [dependencies]
 clap               = { workspace = true, features = ["derive"] }

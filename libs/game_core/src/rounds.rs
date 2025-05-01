@@ -9,10 +9,7 @@ use crate::*;
 
 fn handle_start_tileselect(ctx: Res<GameContext>, game_time: Res<GameTime>, mut sender: GameSender)
 {
-    let Some(remaining_ms) = ctx
-        .duration_config()
-        .select_remaining_ms(game_time.elapsed())
-    else {
+    let Some(remaining_ms) = ctx.duration_config.select_remaining_ms(game_time.elapsed()) else {
         return;
     };
     sender.send(GameMsg::TileSelectInfo { remaining_ms }, vis!(Global));
@@ -23,7 +20,7 @@ fn handle_start_tileselect(ctx: Res<GameContext>, game_time: Res<GameTime>, mut 
 fn try_end_round(mut c: Commands, ctx: Res<GameContext>, game_time: Res<GameTime>, game_round: Res<GameRound>)
 {
     let Some((round, _remaining_ms)) = ctx
-        .duration_config()
+        .duration_config
         .round_and_remaining_ms(game_time.elapsed())
     else {
         return;
@@ -48,14 +45,14 @@ fn try_start_round(
 )
 {
     let Some((round, remaining_ms)) = ctx
-        .duration_config()
+        .duration_config
         .round_and_remaining_ms(game_time.elapsed())
     else {
         return;
     };
 
     let prev = **game_round;
-    if prev == round || round > ctx.duration_config().num_rounds {
+    if prev == round || round > ctx.duration_config.num_rounds {
         return;
     }
 

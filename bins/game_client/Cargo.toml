@@ -10,7 +10,7 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["wiring_client_instance/dev"]
+dev = ["game_core/dev", "wiring_client_instance/dev"]
 
 [dependencies]
 bevy               = { workspace = true, default-features = true }
@@ -25,4 +25,5 @@ bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true, features = ["process"] }
 
 game_core = { path = "../../libs/game_core", default-features = false }
+utils = { path = "../../libs/utils", default-features = false }
 wiring_client_instance = { path = "../../libs/wiring_client_instance", default-features = false }

@@ -3618,6 +3618,7 @@ dependencies = [
  "renet2_setup",
  "tracing",
  "tracing-subscriber",
+ "utils",
  "wiring_client_instance",
 ]
 
@@ -8204,6 +8205,7 @@ dependencies = [
  "iyes_progress",
  "renet2_setup",
  "tracing",
+ "utils",
  "wiring_game_instance",
 ]
 

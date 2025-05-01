@@ -1,4 +1,6 @@
 use std::collections::{HashMap, HashSet};
+use std::net::IpAddr;
+use std::path::PathBuf;
 use std::vec::Vec;
 
 use bevy::prelude::*;
@@ -9,6 +11,7 @@ use bevy_girk_wiring_server::*;
 use game_core::*;
 use renet2_setup::{ClientCounts, ConnectionType};
 use serde::{Deserialize, Serialize};
+use utils::RootConfigs;
 
 use crate::*;
 
@@ -32,6 +35,21 @@ fn prepare_game_startup(
     duration_config: GameDurationConfig,
 ) -> Result<GameStartupHelper, String>
 {
+    let seed = {
+        // Seed is only needed on WASM when making a local-player game, so using the system time is harmless.
+        #[cfg(target_family = "wasm")]
+        {
+            wasm_timer::SystemTime::now()
+                .duration_since(wasm_timer::UNIX_EPOCH)
+                .unwrap_or_default()
+                .as_nanos()
+        }
+
+        #[cfg(not(target_family = "wasm"))]
+        bevy_girk_utils::gen_rand128()
+    };
+    let map_gen_prng = map_gen_prng(seed);
+
     // prepare each client
     let mut client_set = HashSet::with_capacity(client_init_data.len());
     let mut players = HashMap::with_capacity(client_init_data.len());
@@ -53,7 +71,12 @@ fn prepare_game_startup(
                     },
                 );
                 ClientInitializer {
-                    context: ClientContext::new(client_id, ClientType::Player, duration_config),
+                    context: ClientContext {
+                        client_id,
+                        client_type: ClientType::Player,
+                        duration_config,
+                        map_gen_prng,
+                    },
                 }
             }
         };
@@ -73,20 +96,7 @@ fn prepare_game_startup(
     debug_assert_eq!(client_set.len(), start_infos.len());
 
     // finalize
-    let seed = {
-        // Seed is only needed on WASM when making a local-player game.
-        #[cfg(target_family = "wasm")]
-        {
-            wasm_timer::SystemTime::now()
-                .duration_since(wasm_timer::UNIX_EPOCH)
-                .unwrap_or_default()
-                .as_nanos()
-        }
-
-        #[cfg(not(target_family = "wasm"))]
-        bevy_girk_utils::gen_rand128()
-    };
-    let game_context = GameContext::new(game_id, seed, duration_config);
+    let game_context = GameContext { game_id, seed, duration_config };
 
     Ok(GameStartupHelper {
         client_set: GameFwClients::new(client_set),
@@ -94,6 +104,20 @@ fn prepare_game_startup(
         start_infos,
         client_counts,
     })
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Configuration for setting up a game with a game factory.
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ProvGameFactoryConfig
+{
+    pub local_ip: Option<IpAddr>,
+    pub proxy_ip: Option<IpAddr>,
+    pub ws_domain: Option<String>,
+    pub wss_certs: Option<(PathBuf, PathBuf)>,
+    pub config_dir: PathBuf,
+    pub config_override_dir: PathBuf,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -154,7 +178,11 @@ pub struct ClientStartPack
 //-------------------------------------------------------------------------------------------------------------------
 
 #[derive(Debug)]
-pub struct ProvGameFactory;
+pub struct ProvGameFactory
+{
+    #[cfg(target_family = "wasm")]
+    pub configs: RootConfigs,
+}
 
 impl GameFactoryImpl for ProvGameFactory
 {
@@ -163,7 +191,31 @@ impl GameFactoryImpl for ProvGameFactory
     fn new_game(&self, app: &mut App, game_id: u64, data: LaunchData) -> Result<GameStartReport, String>
     {
         // initialize clients and game config
-        let config = data.config;
+        let configs = {
+            // Need this to handle local-player in WASM clients. RootConfigs::new is async in WASM, so we
+            // need RootConfigs
+            #[cfg(not(target_family = "wasm"))]
+            {
+                let sub_dirs = ["/game"];
+
+                #[cfg(not(feature = "dev"))]
+                {
+                    &RootConfigs::new(&data.config.config_dir, &sub_dirs)?
+                }
+                #[cfg(feature = "dev")]
+                {
+                    &RootConfigs::new_with_overrides(
+                        &data.config.config_dir,
+                        &data.config.config_override_dir,
+                        &sub_dirs,
+                    )?
+                }
+            }
+
+            #[cfg(target_family = "wasm")]
+            &self.configs
+        };
+        let config = extract_game_configs(data.config, configs)?;
         let startup = prepare_game_startup(game_id, &config.game_fw_config, data.clients, config.duration_config)?;
 
         // girk server config

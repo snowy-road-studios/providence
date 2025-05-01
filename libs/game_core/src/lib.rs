@@ -6,6 +6,7 @@ mod game_data;
 mod game_rand;
 mod meta;
 mod plugin;
+mod prng;
 mod resources;
 mod rounds;
 mod sets;
@@ -23,6 +24,7 @@ pub use game_data::*;
 pub use game_rand::*;
 pub use meta::*;
 pub use plugin::*;
+pub use prng::*;
 /// Re-export
 pub use renet2::ClientId;
 pub use resources::*;

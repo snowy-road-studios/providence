@@ -1,27 +1,12 @@
-use std::path::PathBuf;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use bevy_girk_game_instance::*;
 use bevy_girk_utils::*;
 use clap::Parser;
 use enfync::{AdoptOrDefault, Handle};
-use game_core::GameData;
 use renet2_setup::ConnectionType;
-use utils::RootConfigs;
 use wiring_backend::*;
 use wiring_game_instance::*;
-
-//-------------------------------------------------------------------------------------------------------------------
-
-fn config_paths() -> Vec<PathBuf>
-{
-    let mut paths = Vec::default();
-    paths.push("game/game.toml".into());
-    paths.push("game/hq.toml".into());
-    paths.push("game_client/game_client.toml".into());
-
-    paths
-}
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -75,15 +60,10 @@ fn run_playtest(
     launch_pack: GameLaunchPack,
     game_instance_path: String,
     game_client_path: String,
-    configs: &RootConfigs,
+    config_dir: String,
 )
 {
     let spawner = enfync::builtin::native::TokioHandle::adopt_or_default();
-
-    let renet2_client_resend_time: u64 = configs
-        .get_integer("game_client", "RENET2_RESEND_TIME_MILLIS")
-        .unwrap();
-    let game_data = GameData::new(configs).unwrap();
 
     // launch game
     tracing::trace!("launching game instance for playtest");
@@ -126,20 +106,15 @@ fn run_playtest(
                 continue;
             };
 
-            let Ok(resend_time_ser) = serde_json::to_string(&renet2_client_resend_time) else {
-                tracing::error!(game_id, "failed serializing renet2 resend time for playtest game client");
-                continue;
-            };
-
-            let Ok(game_data_ser) = serde_json::to_string(&game_data) else {
-                tracing::error!(game_id, "failed serializing renet2 game data for playtest game client");
+            let Ok(config_dir_ser) = serde_json::to_string(&config_dir) else {
+                tracing::error!(game_id, "failed serializing config dir for playtest game client");
                 continue;
             };
 
             tracing::trace!(start_info.client_id, "launching game client for playtest");
 
             let Ok(child_process) = tokio::process::Command::new(&game_client_path)
-                .args(["-T", &token_ser, "-S", &start_info_ser, "-R", &resend_time_ser, "-D", &game_data_ser])
+                .args(["-T", &token_ser, "-S", &start_info_ser, "-C", &config_dir_ser])
                 .spawn()
             else {
                 tracing::error!("failed launching game client for playtest at {:?}", game_client_path);
@@ -181,7 +156,6 @@ fn run_playtest(
 //-------------------------------------------------------------------------------------------------------------------
 
 const DEFAULT_CONFIG_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../config");
-#[cfg(feature = "dev")]
 const CONFIGS_OVERRIDE_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/config");
 const GAME_INSTANCE_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_instance");
 const GAME_CLIENT_PATH: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/debug/game_client");
@@ -213,16 +187,6 @@ fn main()
     tracing::trace!(?args);
     let args = args.extract();
 
-    // configs
-    let mut configs = RootConfigs::default();
-    configs
-        .read(DEFAULT_CONFIG_DIR.into(), config_paths())
-        .unwrap();
-    #[cfg(feature = "dev")]
-    configs
-        .read(CONFIGS_OVERRIDE_DIR.into(), config_paths())
-        .unwrap();
-
     // lobby contents
     let mut players = Vec::default();
     for idx in 0..args.num_clients {
@@ -237,14 +201,22 @@ fn main()
     };
 
     // launch pack
-    let game_configs = make_prov_game_configs(None, None, None, None, &configs).unwrap();
+    let config_dir: String = DEFAULT_CONFIG_DIR.into();
+    let game_configs = ProvGameFactoryConfig {
+        local_ip: None,
+        proxy_ip: None,
+        ws_domain: None,
+        wss_certs: None,
+        config_dir: config_dir.clone().into(),
+        config_override_dir: CONFIGS_OVERRIDE_DIR.into(),
+    };
     let Ok(launch_pack) = get_launch_pack(game_configs, lobby_contents) else {
         tracing::error!("failed getting launch pack for playtest");
         return;
     };
 
     // run it
-    run_playtest(launch_pack, args.game_instance_path, args.game_client_path, &configs);
+    run_playtest(launch_pack, args.game_instance_path, args.game_client_path, config_dir);
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -10,7 +10,7 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["bevy/dynamic_linking", "game_core/dev", "wiring_game_instance/dev"]
+dev = ["bevy/dynamic_linking", "game_core/dev", "wiring_game_instance/dev", "wiring_backend/dev"]
 
 [dependencies]
 axum-server        = { workspace = true, features = ["tls-rustls"] }

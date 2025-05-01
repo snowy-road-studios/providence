@@ -1,19 +1,18 @@
-use std::net::{IpAddr, Ipv6Addr};
-use std::path::PathBuf;
+use std::net::Ipv6Addr;
 use std::time::Duration;
 
 use bevy_girk_game_fw::*;
 use bevy_girk_utils::Rand64;
 use game_core::*;
 use renet2_setup::GameServerSetupConfig;
-use serde::{Deserialize, Serialize};
 use utils::RootConfigs;
+
+use crate::ProvGameFactoryConfig;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Configuration for setting up a game with a game factory.
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct ProvGameFactoryConfig
+#[derive(Debug)]
+pub struct ProvGameConfig
 {
     pub server_setup_config: GameServerSetupConfig,
     pub resend_time: Duration,
@@ -24,13 +23,10 @@ pub struct ProvGameFactoryConfig
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn make_prov_game_configs(
-    local_ip: Option<IpAddr>,
-    proxy_ip: Option<IpAddr>,
-    ws_domain: Option<String>,
-    wss_certs: Option<(PathBuf, PathBuf)>,
+pub fn extract_game_configs(
+    factory_config: ProvGameFactoryConfig,
     configs: &RootConfigs,
-) -> Result<ProvGameFactoryConfig, String>
+) -> Result<ProvGameConfig, String>
 {
     // versioning
     //todo: use hasher directly?
@@ -41,13 +37,15 @@ pub fn make_prov_game_configs(
         protocol_id,
         expire_secs: configs.get_integer("game", "RENET2_CONNECTION_EXPIRY_SECS")?,
         timeout_secs: configs.get_integer("game", "RENET2_CONNECTION_TIMEOUT_SECS")?,
-        server_ip: local_ip.unwrap_or(Ipv6Addr::LOCALHOST.into()),
+        server_ip: factory_config
+            .local_ip
+            .unwrap_or(Ipv6Addr::LOCALHOST.into()),
         native_port: 0,
         wasm_wt_port: 0,
         wasm_ws_port: 0,
-        proxy_ip,
-        ws_domain,
-        wss_certs,
+        proxy_ip: factory_config.proxy_ip,
+        ws_domain: factory_config.ws_domain,
+        wss_certs: factory_config.wss_certs,
         native_port_proxy: 0,
         wasm_wt_port_proxy: 0,
         wasm_ws_port_proxy: 0,
@@ -71,7 +69,7 @@ pub fn make_prov_game_configs(
     let game_data = GameData::new(configs)?;
 
     // prov game factory config
-    let game_factory_config = ProvGameFactoryConfig {
+    let game_config = ProvGameConfig {
         server_setup_config,
         resend_time: Duration::from_millis(configs.get_integer("game", "RENET2_RESEND_TIME_MILLIS")?),
         game_fw_config,
@@ -79,7 +77,7 @@ pub fn make_prov_game_configs(
         game_data,
     };
 
-    Ok(game_factory_config)
+    Ok(game_config)
 }
 
 //-------------------------------------------------------------------------------------------------------------------

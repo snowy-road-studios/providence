@@ -21,12 +21,12 @@ fn handle_client_connect(
     match **state {
         GameState::Startup | GameState::Init => (),
         GameState::TileSelect => {
-            if let Some(remaining_ms) = ctx.duration_config().select_remaining_ms(time.elapsed()) {
+            if let Some(remaining_ms) = ctx.duration_config.select_remaining_ms(time.elapsed()) {
                 sender.send(GameMsg::TileSelectInfo { remaining_ms }, vis!(Client(client_id)));
             }
         }
         GameState::Play => {
-            if let Some((round, remaining_ms)) = ctx.duration_config().round_and_remaining_ms(time.elapsed()) {
+            if let Some((round, remaining_ms)) = ctx.duration_config.round_and_remaining_ms(time.elapsed()) {
                 sender.send(GameMsg::RoundInfo { round, remaining_ms }, vis!(Client(client_id)));
             }
         }

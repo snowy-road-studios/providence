@@ -10,6 +10,7 @@ use client_core::ClientCorePlugin;
 use client_skin::ClientSkinPlugin;
 use game_core::GameData;
 use renet2_setup::{ClientConnectPack, ServerConnectToken};
+use utils::RootConfigs;
 use wiring_game_instance::*;
 
 use crate::*;
@@ -23,9 +24,21 @@ use crate::*;
 #[derive(Debug)]
 pub struct ProvClientFactory
 {
-    pub protocol_id: u64,
-    pub resend_time: Duration,
-    pub game_data: Option<GameData>,
+    protocol_id: u64,
+    resend_time: Duration,
+    game_data: Option<GameData>,
+}
+
+impl ProvClientFactory
+{
+    pub fn new(protocol_id: u64, configs: &RootConfigs) -> Result<Self, String>
+    {
+        Ok(Self {
+            protocol_id,
+            resend_time: Duration::from_millis(configs.get_integer("client", "RENET2_RESEND_TIME_MILLIS")?),
+            game_data: Some(GameData::new(&configs)?),
+        })
+    }
 }
 
 impl ClientFactoryImpl for ProvClientFactory
@@ -36,6 +49,7 @@ impl ClientFactoryImpl for ProvClientFactory
     fn add_plugins(&mut self, app: &mut App)
     {
         // add game data from configs
+        // - unwrap safety: add_plugins only runs once and always first
         self.game_data.take().unwrap().insert(app.world_mut());
 
         // girk client config

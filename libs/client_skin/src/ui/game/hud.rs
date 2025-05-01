@@ -10,8 +10,8 @@ fn edit_header(h: &mut UiSceneHandle)
 {
     h.get("name")
         .update(|id: TargetId, mut e: TextEditor, context: Res<ClientContext>| {
-            match context.client_type() {
-                ClientType::Player => write_text!(e, *id, "player{}", context.id()),
+            match context.client_type {
+                ClientType::Player => write_text!(e, *id, "player{}", context.client_id),
             };
         });
     h.edit("round_info", |h| {
@@ -58,7 +58,7 @@ fn edit_header(h: &mut UiSceneHandle)
                             write_text!(e, *id, "Tile Selection{paused}");
                         }
                         ClientState::Play => {
-                            write_text!(e, *id, "Round {} / {}{paused}", round.round(), ctx.duration_config().num_rounds);
+                            write_text!(e, *id, "Round {} / {}{paused}", round.round(), ctx.duration_config.num_rounds);
                         }
                         ClientState::End => {
                             write_text!(e, *id, "End");
