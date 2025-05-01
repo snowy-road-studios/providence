@@ -18,7 +18,7 @@ pub struct ConfigDirectories
 ///
 /// Every config sub-directory must contain a `manifest.toml` file with a `FILE = [ .. ]` entry containing the
 /// names of all other files in the directory.
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct RootConfigs
 {
     /// [filename : [config key : config value]]
@@ -275,7 +275,9 @@ impl RootConfigs
         allow_missing_files: bool,
     ) -> Result<(), String>
     {
-        let reader = HttpWasmAssetReader::new(root_path);
+        use bevy::asset::io::{AssetReader, Reader};
+
+        let reader = bevy::asset::io::wasm::HttpWasmAssetReader::new(root_path);
         for path in config_files.drain(..) {
             let context = path
                 .as_path()

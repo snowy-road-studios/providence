@@ -25,7 +25,7 @@ bevy_girk_game_fw         = { workspace = true }
 bevy_girk_game_instance   = { workspace = true }
 bevy_girk_utils           = { workspace = true }
 
-wiring_game_instance = { path = "../wiring_game_instance" }
+wiring_game_instance = { path = "../wiring_game_instance", default-features = false }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 rand = { version = "0.8" }

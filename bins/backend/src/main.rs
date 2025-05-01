@@ -293,7 +293,7 @@ fn main()
     // extract configs
     let main_dir = args.config_dir;
     let override_dir = CONFIGS_OVERRIDE_DIR.into();
-    let sub_dirs = ["/backend", "/frontend"];
+    let sub_dirs = ["backend", "frontend"];
 
     #[cfg(not(feature = "dev"))]
     let configs = RootConfigs::new(&main_dir, &sub_dirs).unwrap();

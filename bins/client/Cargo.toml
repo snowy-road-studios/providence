@@ -27,16 +27,18 @@ bevy_girk_client_instance   = { workspace = true }
 bevy_girk_game_instance     = { workspace = true }
 bevy_girk_utils             = { workspace = true }
 
-user_client = { path = "../../libs/user_client" }
-utils = { path = "../../libs/utils" }
-wiring_backend = { path = "../../libs/wiring_backend" }
-wiring_client_instance = { path = "../../libs/wiring_client_instance" }
-wiring_game_instance = { path = "../../libs/wiring_game_instance" }
+user_client = { path = "../../libs/user_client", default-features = false }
+utils = { path = "../../libs/utils", default-features = false }
+wiring_backend = { path = "../../libs/wiring_backend", default-features = false }
+wiring_client_instance = { path = "../../libs/wiring_client_instance", default-features = false }
+wiring_game_instance = { path = "../../libs/wiring_game_instance", default-features = false }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]
 rustls = { workspace = true }
 
 [target.'cfg(target_family = "wasm")'.dependencies]
+getrandom = { workspace = true, features = ["wasm_js"]} # infects dependencies with wasm_js feature
 console_error_panic_hook = { version = "0.1" }
 wasm-bindgen = { workspace = true }
+wasm-bindgen-futures = { workspace = true }
 tracing-wasm = { version = "0.2" }

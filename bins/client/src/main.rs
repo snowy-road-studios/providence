@@ -102,7 +102,7 @@ const CONFIGS_OVERRIDE_DIR: &'static str = concat!(env!("CARGO_MANIFEST_DIR"), "
 
 fn sub_dirs() -> Vec<&'static str>
 {
-    vec!["/client", "/frontend", "/game", "/user_client"]
+    vec!["client", "frontend", "game", "user_client"]
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -158,7 +158,7 @@ fn run_app(args: ClientCliResolved, configs: RootConfigs, config_dirs: ConfigDir
 //-------------------------------------------------------------------------------------------------------------------
 
 #[cfg(target_family = "wasm")]
-#[wasm_bindgen(main)]
+#[wasm_bindgen::prelude::wasm_bindgen(main)]
 async fn main()
 {
     // setup wasm tracing
@@ -172,7 +172,7 @@ async fn main()
 
     // extract configs
     let config_dirs = ConfigDirectories {
-        main_dir: args.config_dir,
+        main_dir: args.config_dir.clone(),
         override_dir: CONFIGS_OVERRIDE_DIR.into(),
     };
     let sub_dirs = sub_dirs();

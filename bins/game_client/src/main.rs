@@ -103,7 +103,7 @@ fn main()
     let args = args.extract();
 
     // extract configs
-    let sub_dirs = ["/client", "/game"];
+    let sub_dirs = ["client", "game"];
 
     #[cfg(not(feature = "dev"))]
     let configs = RootConfigs::new(&args.config_dir, &sub_dirs).unwrap();

@@ -196,7 +196,7 @@ impl GameFactoryImpl for ProvGameFactory
             // need RootConfigs
             #[cfg(not(target_family = "wasm"))]
             {
-                let sub_dirs = ["/game"];
+                let sub_dirs = ["game"];
 
                 #[cfg(not(feature = "dev"))]
                 {

@@ -9,7 +9,7 @@ cp -r assets wasm/client
 PROV_HOST_ADDR=providence-prealpha-backend-0.online:48888 \
     PROV_HOST_IS_WSS=true \
     PROV_CONFIG_DIR=config \
-    RUSTFLAGS="-Zlocation-detail=none -Zfmt-debug=none" \
+    RUSTFLAGS="-Zlocation-detail=none -Zfmt-debug=none --cfg getrandom_backend="wasm_js"" \
     cargo +nightly build \
         -Z build-std=std,panic_abort \
         -Z build-std-features=optimize_for_size,panic_immediate_abort \
