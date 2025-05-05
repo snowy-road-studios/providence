@@ -148,7 +148,7 @@ impl RootConfigs
                     for val in vals.iter() {
                         match val {
                             toml::value::Value::String(file) => {
-                                config_files.push(file.clone().into());
+                                config_files.push(sub_dir.join(file));
                             }
                             _ => (),
                         }
@@ -258,7 +258,7 @@ impl RootConfigs
                     for val in vals.iter() {
                         match val {
                             toml::value::Value::String(file) => {
-                                config_files.push(file.clone().into());
+                                config_files.push(sub_dir.join(file));
                             }
                             _ => (),
                         }

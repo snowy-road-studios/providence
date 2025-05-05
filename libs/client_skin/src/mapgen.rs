@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::AseSpriteSlice;
 use bevy_cobweb::prelude::*;
+use bevy_cobweb_ui::prelude::CobLoadableRegistrationAppExt;
 use client_core::MapGenerated;
 use game_core::*;
 use utils_gui::{AsepriteMap, LoadAsepriteFiles};
@@ -61,7 +62,8 @@ impl Plugin for MapgenPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_reactor(broadcast::<MapGenerated>(), add_tile_components);
+        app.register_command_type::<TileFile>()
+            .add_reactor(broadcast::<MapGenerated>(), add_tile_components);
     }
 }
 

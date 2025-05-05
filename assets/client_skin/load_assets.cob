@@ -1,2 +1,2 @@
 #commands
-TileFile("assets/tiles.aseprite")
+TileFile("client_skin/assets/tiles.aseprite")
