@@ -27,7 +27,7 @@ client.zsort as zsort
     FlexNode{width:100vw height:100vh justify_main:Center justify_cross:Center}
     FocusPolicy::Block
     Picking::Block
-    BackgroundColor(#90444444) // Gray out background to indicate it's non-interactive.
+    //BackgroundColor(#90444444) // Gray out background to indicate it's non-interactive.
 
     "window"
         FlexNode{width:80% height:80% flex_direction:Column}

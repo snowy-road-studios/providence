@@ -18,10 +18,11 @@ client.zsort as zsort
             FlexNode{flex_grow:1}
 
         "round_info"
+            FlexNode{flex_direction:Row}
             "timer"
                 TextLine{size:20}
             ""
-                FlexNode{width:10px}
+                FlexNode{width:25px}
             "round"
                 TextLine{size:20}
 
@@ -59,10 +60,10 @@ client.zsort as zsort
                 justify_main:Center justify_cross:Center
                 margin:{left:10px bottom:10px}
             }
-            Splat<Border>(1px)
+            Splat<Border>(2px)
             BorderColor(#000000)
             Responsive<BackgroundColor>{
-                idle:#00000000 hover:#55888888 press:#77888888
+                idle:#00000000 hover:#55000000 press:#77000000
             }
 
             "text"

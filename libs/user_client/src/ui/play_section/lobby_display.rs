@@ -40,7 +40,7 @@ pub(super) fn build_lobby_display(h: &mut UiSceneHandle)
             let lobby_content = display.get().result()?;
             for (_, player_id) in lobby_content.players.iter() {
                 c.ui_builder(*id)
-                    .spawn_scene(("ui.user.sections.play", "lobby_display_member"), &mut s, |h| {
+                    .spawn_scene(("user.sections.play", "lobby_display_member"), &mut s, |h| {
                         h.get("text")
                             .update_text(format!("Player: {:0>6}", player_id % 1_000_000u128));
                     });

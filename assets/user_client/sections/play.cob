@@ -132,7 +132,7 @@ $lobby_list_text_size = 20
 
     "content"
         FlexNode{
-            width:500px flex_grow:1
+            width:400px flex_grow:1
             flex_direction:Column justify_main:FlexStart justify_cross:FlexStart justify_self_cross:Center
         }
 
@@ -172,7 +172,7 @@ $lobby_list_text_size = 20
                         "header"
                             GridNode{
                                 width:100%
-                                grid_template_columns:[1.1fr 1.1fr 1fr 1fr 0.5fr]
+                                grid_template_columns:[1.1fr 1.1fr 1fr 0.5fr]
                                 grid_template_rows:[auto]
                             }
 
@@ -204,7 +204,7 @@ $lobby_list_text_size = 20
                         "entries"
                             GridNode{
                                 width:100%
-                                grid_template_columns:[1.1fr 1.1fr 1fr 1fr 0.5fr]
+                                grid_template_columns:[1.1fr 1.1fr 1fr 0.5fr]
                                 grid_auto_rows:[30px]
                             }
             }

@@ -15,7 +15,7 @@ client.zsort as zsort
         Splat<Border>(1px)
         BorderColor(#000000)
         Responsive<BackgroundColor>{
-            idle:#00000000 hover:#55888888 press:#77888888
+            idle:#00000000 hover:#55000000 press:#77000000
         }
 
         "text"
