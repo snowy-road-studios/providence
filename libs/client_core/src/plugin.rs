@@ -26,6 +26,7 @@ impl Plugin for ClientCorePlugin
             .add_plugins(PlayerInputPlugin)
             .add_plugins(RoundsPlugin)
             .add_plugins(GameEndPlugin)
+            .add_plugins(MapgenPlugin)
             .add_systems(OnEnter(ClientInitState::Done), request_game_state)
             .configure_sets(Update, PlayerInputSet.in_set(ClientLogicSet::Admin));
     }

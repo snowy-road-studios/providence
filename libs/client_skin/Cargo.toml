@@ -9,10 +9,11 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["bevy_cobweb_ui/dev", "client_core/dev", "game_core/dev", "wiring_game_instance/dev"]
+dev = ["bevy_cobweb_ui/dev", "client_core/dev", "game_core/dev", "utils_gui/dev", "wiring_game_instance/dev"]
 
 [dependencies]
 bevy            = { workspace = true, default-features = true }
+bevy_aseprite_ultra = { workspace = true }
 bevy_cobweb     = { workspace = true }
 bevy_cobweb_ui  = { workspace = true, features = ["colors", "widgets"] } # can't do "serde", messes up reflect(default)
 bevy_framepace  = { workspace = true }
@@ -28,4 +29,6 @@ bevy_girk_utils = { workspace = true }
 
 client_core = { path = "../client_core", default-features = false }
 game_core   = { path = "../game_core", default-features = false, features = ["commands"] }
+utils  = { path = "../utils", default-features = false }
+utils_gui = { path = "../utils_gui", default-features = false }
 wiring_game_instance  = { path = "../wiring_game_instance", default-features = false }

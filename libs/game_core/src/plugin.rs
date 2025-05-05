@@ -20,6 +20,7 @@ impl Plugin for GamePlugin
             .add_plugins(GameStatePlugin)
             .add_plugins(GameRoundPlugin)
             .add_plugins(ClientConnectPlugin)
+            .add_plugins(MapPlugin)
             .configure_sets(
                 Update,
                 (TimeUpdateSet, RoundEndSet, GameStateUpdateSet, RoundStartSet)

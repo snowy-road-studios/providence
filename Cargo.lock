@@ -274,6 +274,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "175571dd1d178ced59193a6fc02dde1b972eb0bc56c892cde9beeceac5bf0f6b"
 
 [[package]]
+name = "aseprite-loader"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "011a4d9f839a18ab05c84c3688222e4dfae12003bd3e6408a9882f190659994c"
+dependencies = [
+ "bitflags 2.9.0",
+ "flate2",
+ "itertools 0.13.0",
+ "nom",
+ "strum",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "ash"
 version = "0.38.0+1.3.281"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -702,6 +716,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_aseprite_ultra"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d4b752028f543a025f8f9950b7ae8cc61a9b0355248e72bf3f958be1c19daee4"
+dependencies = [
+ "aseprite-loader",
+ "bevy",
+ "serde",
+ "thiserror 2.0.12",
+ "uuid",
+]
+
+[[package]]
 name = "bevy_asset"
 version = "0.16.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -801,9 +828,9 @@ dependencies = [
 
 [[package]]
 name = "bevy_cobweb_ui"
-version = "0.13.4"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ed5486fc8565991f652d8cb475e45930047e78ecedec9345295e777a8ce9f31c"
+checksum = "1dc15ba097e3b102c6f3cd61c363b5c188333aea556190032ee4aefc89f76163"
 dependencies = [
  "bevy",
  "bevy_cobweb",
@@ -2417,6 +2444,7 @@ dependencies = [
  "serde",
  "tracing",
  "utils",
+ "utils_gui",
  "wasm-timer",
  "wiring_game_instance",
 ]
@@ -2426,6 +2454,7 @@ name = "client_skin"
 version = "0.0.1"
 dependencies = [
  "bevy",
+ "bevy_aseprite_ultra",
  "bevy_cobweb",
  "bevy_cobweb_ui",
  "bevy_framepace",
@@ -2439,6 +2468,8 @@ dependencies = [
  "game_core",
  "iyes_progress",
  "tracing",
+ "utils",
+ "utils_gui",
  "wiring_game_instance",
 ]
 
@@ -3635,6 +3666,7 @@ dependencies = [
  "bevy_girk_utils",
  "bevy_replicon",
  "bevy_replicon_attributes",
+ "hexx",
  "renet2",
  "serde",
  "tracing",
@@ -4015,6 +4047,15 @@ name = "hexf-parse"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfa686283ad6dd069f105e5ab091b04c62850d3e4cf5d67debad1933f55023df"
+
+[[package]]
+name = "hexx"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "aad3af3c06eb1312404d159a9b5dee86832e1fb14bf094c1badc3b7f03494f4a"
+dependencies = [
+ "glam",
+]
 
 [[package]]
 name = "hmac-sha256"
@@ -7322,7 +7363,21 @@ name = "utils"
 version = "0.0.1"
 dependencies = [
  "bevy",
+ "serde",
  "toml",
+ "tracing",
+]
+
+[[package]]
+name = "utils_gui"
+version = "0.0.1"
+dependencies = [
+ "bevy",
+ "bevy_aseprite_ultra",
+ "bevy_cobweb",
+ "bevy_cobweb_ui",
+ "fluent-langneg 0.14.1",
+ "serde",
  "tracing",
 ]
 
@@ -8194,6 +8249,7 @@ name = "wiring_client_instance"
 version = "0.0.1"
 dependencies = [
  "bevy",
+ "bevy_aseprite_ultra",
  "bevy_cobweb",
  "bevy_cobweb_ui",
  "bevy_girk_client_fw",
@@ -8209,6 +8265,7 @@ dependencies = [
  "renet2_setup",
  "tracing",
  "utils",
+ "utils_gui",
  "wiring_game_instance",
 ]
 

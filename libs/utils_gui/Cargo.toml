@@ -1,0 +1,22 @@
+[package]
+name = "utils_gui"
+version.workspace = true
+edition.workspace = true
+
+[lib]
+test    = false
+doctest = false
+
+[features]
+default = ["dev"]
+
+dev = []
+
+[dependencies]
+bevy = { workspace = true }
+bevy_aseprite_ultra = { workspace = true }
+bevy_cobweb = { workspace = true }
+bevy_cobweb_ui = { workspace = true }
+fluent-langneg = { workspace = true }
+serde = { workspace = true }
+tracing = { workspace = true }

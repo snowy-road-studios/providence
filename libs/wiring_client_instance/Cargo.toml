@@ -9,12 +9,13 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["game_core/dev", "client_core/dev", "client_skin/dev"]
+dev = ["game_core/dev", "client_core/dev", "client_skin/dev", "utils_gui/dev"]
 
 [dependencies]
 bevy = { workspace = true, default-features = true }
+bevy_aseprite_ultra = { workspace = true }
 bevy_cobweb = { workspace = true }
-bevy_cobweb_ui = { workspace = true }
+bevy_cobweb_ui = { workspace = true, features = ["colors", "widgets"] }
 iyes_progress = { workspace = true }
 renet2_setup = { workspace = true, features = ["netcode", "memory_transport"] }
 tracing = { workspace = true }
@@ -30,4 +31,5 @@ client_core          = { path = "../client_core", default-features = false }
 client_skin          = { path = "../client_skin", default-features = false }
 game_core            = { path = "../game_core", default-features = false, features = ["commands"] }
 utils                = { path = "../utils", default-features = false }
+utils_gui            = { path = "../utils_gui", default-features = false }
 wiring_game_instance = { path = "../wiring_game_instance", default-features = false }

@@ -1,10 +1,17 @@
-use bevy_girk_utils::Rand64;
+use bevy::prelude::*;
+
+use super::MapGenPlugin;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn map_gen_prng(seed: u128) -> u64
+pub(crate) struct MapPlugin;
+
+impl Plugin for MapPlugin
 {
-    Rand64::new("PROVIDENCE MAP GEN SEED", seed).next()
+    fn build(&self, app: &mut App)
+    {
+        app.add_plugins(MapGenPlugin);
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------

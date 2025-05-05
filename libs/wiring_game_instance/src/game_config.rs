@@ -65,7 +65,7 @@ pub fn extract_game_configs(
         num_rounds: configs.get_integer("game", "NUM_ROUNDS")?,
     };
 
-    // building configs
+    // misc configs
     let game_data = GameData::new(configs)?;
 
     // prov game factory config

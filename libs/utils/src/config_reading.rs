@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
+use serde::Deserialize;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -27,6 +28,14 @@ pub struct RootConfigs
 
 impl RootConfigs
 {
+    pub fn get_type<T: for<'de> Deserialize<'de>>(&self, context: &str, key: &str) -> Result<T, String>
+    {
+        let type_name = std::any::type_name::<T>();
+        Ok(T::deserialize(self.get_value(context, key)?.clone()).map_err(|err| {
+            format!("config lookup failed for {context}::{key}; could not deserialize into {type_name}: {err:?}")
+        })?)
+    }
+
     pub fn get_value(&self, context: &str, key: &str) -> Result<&toml::value::Value, String>
     {
         let ctx_map = self

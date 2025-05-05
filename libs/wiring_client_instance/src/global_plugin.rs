@@ -53,9 +53,11 @@ use bevy::render::render_resource::{CachedPipelineState, PipelineCache};
 use bevy::render::{MainWorld, RenderApp};
 use bevy::window::*;
 use bevy::winit::UpdateMode;
+use bevy_aseprite_ultra::AsepriteUltraPlugin;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
 use iyes_progress::prelude::*;
+use utils_gui::AsepriteLoadPlugin;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -116,7 +118,7 @@ impl Plugin for BevyEnginePlugin
         // use custom logging
         let bevy_plugins = bevy_plugins.disable::<bevy::log::LogPlugin>();
 
-        // time plugin added separately by bevy_girk
+        // plugins added separately by bevy_girk
         let bevy_plugins = if app.is_plugin_added::<bevy::time::TimePlugin>() {
             bevy_plugins.disable::<bevy::time::TimePlugin>()
         } else {
@@ -132,7 +134,7 @@ impl Plugin for BevyEnginePlugin
         app.add_plugins(bevy_plugins)
             .insert_resource(bevy::winit::WinitSettings {
                 focused_mode: UpdateMode::reactive(std::time::Duration::from_millis(10)),
-                unfocused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(200)),
+                unfocused_mode: UpdateMode::reactive_low_power(std::time::Duration::from_millis(10)),
                 ..Default::default()
             });
     }
@@ -185,6 +187,8 @@ impl Plugin for ProvClientGlobalPlugin
         app.init_resource::<PipelinesReady>()
             .add_plugins(BevyEnginePlugin)
             .add_plugins(CobwebUiPlugin)
+            .add_plugins(AsepriteUltraPlugin)
+            .add_plugins(AsepriteLoadPlugin)
             .add_systems(PreStartup, setup)
             .add_systems(
                 Update,

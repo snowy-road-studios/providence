@@ -180,6 +180,8 @@ pub struct ClientStartPack
 #[derive(Debug)]
 pub struct ProvGameFactory
 {
+    // Need this to handle local-player in WASM clients. RootConfigs::new is async in WASM, so we
+    // need a copy of RootConfigs.
     #[cfg(target_family = "wasm")]
     pub configs: RootConfigs,
 }
@@ -192,8 +194,6 @@ impl GameFactoryImpl for ProvGameFactory
     {
         // initialize clients and game config
         let configs = {
-            // Need this to handle local-player in WASM clients. RootConfigs::new is async in WASM, so we
-            // need RootConfigs
             #[cfg(not(target_family = "wasm"))]
             {
                 let sub_dirs = ["game"];
