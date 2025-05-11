@@ -70,22 +70,14 @@ fn check_loaded_aseprites(
 /// System that runs when the app needs to replace existing aseprites with updated localized aseprites.
 fn relocalize_aseprites(
     aseprites: Res<AsepriteMap>,
-    mut animations: Query<&mut AseSpriteAnimation>,
-    mut slices: Query<&mut AseSpriteSlice>,
-    mut ui_animations: Query<&mut AseUiAnimation>,
-    mut ui_slices: Query<&mut AseUiSlice>,
+    mut animations: Query<&mut AseAnimation>,
+    mut slices: Query<&mut AseSlice>,
 )
 {
     for mut handle in animations
         .iter_mut()
         .map(|c| &mut c.into_inner().aseprite)
         .chain(slices.iter_mut().map(|c| &mut c.into_inner().aseprite))
-        .chain(
-            ui_animations
-                .iter_mut()
-                .map(|c| &mut c.into_inner().aseprite),
-        )
-        .chain(ui_slices.iter_mut().map(|c| &mut c.into_inner().aseprite))
     {
         aseprites.localize_aseprite(&mut handle);
     }

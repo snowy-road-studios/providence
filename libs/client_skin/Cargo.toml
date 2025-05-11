@@ -19,6 +19,7 @@ bevy_cobweb_ui  = { workspace = true, features = ["colors", "widgets"] } # can't
 bevy_framepace  = { workspace = true }
 bevy_replicon   = { workspace = true }
 bevy_renet2     = { workspace = true }
+hexx            = { workspace = true }
 iyes_progress   = { workspace = true }
 tracing         = { workspace = true }
 

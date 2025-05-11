@@ -53,8 +53,7 @@ impl Plugin for ClientSetsPlugin
             Update,
             ClientSet::Init
                 .run_if(client_is_initializing)
-                .run_if(in_state(ClientState::Init))
-                .in_set(ClientLogicSet::Update),
+                .run_if(in_state(ClientState::Init)),
         )
         .configure_sets(
             Update,

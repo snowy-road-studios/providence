@@ -1,10 +1,12 @@
 use bevy::prelude::*;
-use bevy_aseprite_ultra::prelude::AseSpriteSlice;
+use bevy_aseprite_ultra::prelude::AseSlice;
 use bevy_cobweb::prelude::*;
-use bevy_cobweb_ui::prelude::CobLoadableRegistrationAppExt;
 use client_core::MapGenerated;
 use game_core::*;
-use utils_gui::{AsepriteMap, LoadAsepriteFiles};
+use hexx::Hex;
+use utils_gui::AsepriteMap;
+
+use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -12,11 +14,11 @@ fn add_tile_components(
     mut c: Commands,
     aseprites: Res<AsepriteMap>,
     grid: Res<HexGrid>,
-    file: Res<TileFile>,
+    map_settings: Res<MapSettings>,
     tiles: Query<(Entity, &TileType)>,
 )
 {
-    let aseprite = aseprites.get(&file.0);
+    let aseprite = aseprites.get(&map_settings.aseprite);
     let sprite_size = grid.layout.rect_size();
 
     for (entity, tile) in tiles.iter() {
@@ -31,27 +33,26 @@ fn add_tile_components(
         };
 
         ec.insert((
-            AseSpriteSlice { aseprite: aseprite.clone(), name: tag.into() },
+            AseSlice { aseprite: aseprite.clone(), name: tag.into() },
             Sprite { custom_size: Some(sprite_size), ..default() },
+            Transform::from_translation(Vec3::default().with_z(map_settings.sorting.tile)),
         ));
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Stores the asset path of aseprite tile textures.
-///
-/// Tiles are accessed via aseprite tag.
-#[derive(Resource, Default, Debug, Reflect, PartialEq)]
-pub struct TileFile(String);
-
-impl Command for TileFile
+fn set_camera_boundary(mut c: Commands, grid: Res<HexGrid>)
 {
-    fn apply(self, w: &mut World)
-    {
-        LoadAsepriteFiles(vec![self.0.clone()]).apply(w);
-        w.insert_resource(self);
-    }
+    let upper_right = grid
+        .layout
+        .hex_to_world_pos(Hex { x: grid.dimension, y: -(grid.dimension / 2) });
+    let lower_left = grid.layout.hex_to_world_pos(Hex {
+        x: -grid.dimension,
+        y: (grid.dimension / 2) + (grid.dimension % 2),
+    });
+
+    c.insert_resource(CameraBoundary { upper_right, lower_left });
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -62,8 +63,8 @@ impl Plugin for MapgenPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.register_command_type::<TileFile>()
-            .add_reactor(broadcast::<MapGenerated>(), add_tile_components);
+        app.add_reactor(broadcast::<MapGenerated>(), add_tile_components)
+            .add_reactor(broadcast::<MapGenerated>(), set_camera_boundary);
     }
 }
 

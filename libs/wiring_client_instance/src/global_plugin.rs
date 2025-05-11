@@ -56,6 +56,7 @@ use bevy::winit::UpdateMode;
 use bevy_aseprite_ultra::AsepriteUltraPlugin;
 use bevy_cobweb_ui::prelude::*;
 use bevy_girk_client_fw::ClientAppState;
+use client_skin::MainCamera;
 use iyes_progress::prelude::*;
 use utils_gui::AsepriteLoadPlugin;
 
@@ -167,7 +168,7 @@ fn pipeline_progress(pipelines: Res<PipelinesReady>) -> Progress
 
 fn setup(mut c: Commands)
 {
-    c.spawn(Camera2d);
+    c.spawn((Camera2d, MainCamera));
 }
 
 //-------------------------------------------------------------------------------------------------------------------

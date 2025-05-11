@@ -90,6 +90,9 @@ fn generate_map(mut c: Commands, ctx: Res<GameContext>, settings: Res<MapGenSett
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Settings for generating maps.
+///
+/// Loaded from config file.
 #[derive(Resource, Serialize, Deserialize, Debug, Clone)]
 pub struct MapGenSettings
 {
@@ -149,15 +152,11 @@ pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings)
     let dim = map_dim * 2 + 1;
     tiles.reserve((dim * dim) as usize);
     entities.reserve((dim * dim) as usize);
-    for (coord, entity) in hexx::shapes::flat_rectangle([-map_dim, map_dim, -map_dim, map_dim])
-        .enumerate()
-        .map(|(i, coord)| {
-            let pos = layout.hex_to_world_pos(coord);
-            let prng = prng.next() as f64 / u64::MAX as f64;
-            let entity = spawn_map_tile(c, i, coord, pos, prng, settings, freq_total, &freqs);
-            (coord, entity)
-        })
-    {
+    for (i, coord) in hexx::shapes::flat_rectangle([-map_dim, map_dim, -map_dim, map_dim]).enumerate() {
+        let pos = layout.hex_to_world_pos(coord);
+        let prng = prng.next() as f64 / u64::MAX as f64;
+        let entity = spawn_map_tile(c, i, coord, pos, prng, settings, freq_total, &freqs);
+
         tiles.insert(coord, entity);
         entities.insert(entity, coord);
     }
@@ -166,6 +165,7 @@ pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings)
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Expects [`MapGenSettings`] was inserted by the game factory.
 pub(super) struct MapGenPlugin;
 
 impl Plugin for MapGenPlugin

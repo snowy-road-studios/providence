@@ -15,10 +15,11 @@ commands = []
 
 [dependencies]
 bevy                     = { workspace = true }
+bevy_121                 = { workspace = true }
 bevy_cobweb              = { workspace = true }
 bevy_replicon            = { workspace = true }
 bevy_replicon_attributes = { workspace = true }
-hexx                     = { workspace = true }
+hexx                     = { workspace = true, features = ["serde"] }
 renet2                   = { workspace = true }
 serde                    = { workspace = true }
 tracing                  = { workspace = true }

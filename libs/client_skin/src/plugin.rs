@@ -4,6 +4,13 @@ use super::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Marker component for the main camera (orthographic).
+#[derive(Component)]
+#[component(immutable)]
+pub struct MainCamera;
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Plugin for setting up a client skin.
 ///
 /// Prerequisites:
@@ -17,7 +24,7 @@ impl Plugin for ClientSkinPlugin
         app.add_plugins(UiPlugin)
             .add_plugins(FpsTrackerPlugin)
             .add_plugins(EventsPlugin)
-            .add_plugins(MapgenPlugin);
+            .add_plugins(MapPlugin);
     }
 }
 

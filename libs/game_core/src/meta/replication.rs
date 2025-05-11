@@ -14,7 +14,12 @@ impl Plugin for GameReplicationPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.replicate::<PlayerId>().replicate::<PlayerName>();
+        app.replicate::<PlayerId>()
+            .replicate::<PlayerName>()
+            .replicate::<TileMeta>()
+            .replicate::<SelectableTile>()
+            .replicate::<TileClaims>()
+            .replicate::<TileOwner>();
     }
 }
 
