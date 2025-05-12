@@ -11,7 +11,7 @@ use crate::*;
 
 fn spawn_map(mut c: Commands, ctx: Res<ClientContext>, settings: Res<MapGenSettings>)
 {
-    generate_map_impl(&mut c, ctx.map_gen_prng, &settings);
+    generate_map_impl(&mut c, ctx.map_gen_prng, &settings, false);
     c.react().broadcast(MapGenerated);
 }
 

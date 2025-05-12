@@ -48,14 +48,20 @@ fn spawn_map_tile(
     settings: &MapGenSettings,
     total: u64,
     freqs: &[(u16, TileType)],
-) -> Entity
+    ignore_edge_tiles: bool,
+) -> Option<Entity>
 {
     let transform = Transform::from_xyz(pos.x, pos.y, 0.0);
 
     if is_edge_tile(settings.map_dimension, settings.edge_buffer as i32, i as i32) {
-        return c
-            .spawn((EdgeTile(coord), TileType::Mountain, MountainTile, transform))
-            .id();
+        if ignore_edge_tiles {
+            return None;
+        } else {
+            return Some(
+                c.spawn((EdgeTile(coord), TileType::Mountain, MountainTile, transform))
+                    .id(),
+            );
+        }
     }
 
     let mut acc: u64 = 0;
@@ -66,26 +72,27 @@ fn spawn_map_tile(
         }
         match tile {
             TileType::Mountain => {
-                return c
-                    .spawn((MapTile(coord), tile, MountainTile, transform))
-                    .id()
+                return Some(
+                    c.spawn((MapTile(coord), tile, MountainTile, transform))
+                        .id(),
+                )
             }
-            TileType::Water => return c.spawn((MapTile(coord), tile, WaterTile, transform)).id(),
-            TileType::Rocky => return c.spawn((MapTile(coord), tile, RockyTile, transform)).id(),
-            TileType::Ore => return c.spawn((MapTile(coord), tile, OreTile, transform)).id(),
-            TileType::Forest => return c.spawn((MapTile(coord), tile, ForestTile, transform)).id(),
-            TileType::Grass => return c.spawn((MapTile(coord), tile, GrassTile, transform)).id(),
+            TileType::Water => return Some(c.spawn((MapTile(coord), tile, WaterTile, transform)).id()),
+            TileType::Rocky => return Some(c.spawn((MapTile(coord), tile, RockyTile, transform)).id()),
+            TileType::Ore => return Some(c.spawn((MapTile(coord), tile, OreTile, transform)).id()),
+            TileType::Forest => return Some(c.spawn((MapTile(coord), tile, ForestTile, transform)).id()),
+            TileType::Grass => return Some(c.spawn((MapTile(coord), tile, GrassTile, transform)).id()),
         }
     }
 
-    Entity::PLACEHOLDER
+    None
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
 fn generate_map(mut c: Commands, ctx: Res<GameContext>, settings: Res<MapGenSettings>)
 {
-    generate_map_impl(&mut c, map_gen_prng(ctx.seed), &settings);
+    generate_map_impl(&mut c, map_gen_prng(ctx.seed), &settings, true);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -123,7 +130,8 @@ pub struct HexGrid
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings)
+/// Set `ignore_edge_tiles = true` if edge tile entities are not needed (e.g. the server).
+pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings, ignore_edge_tiles: bool)
 {
     // prep tile generator
     let mut prng = Rand64::new("MAP GEN PRNG", prng as u128);
@@ -155,7 +163,10 @@ pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings)
     for (i, coord) in hexx::shapes::flat_rectangle([-map_dim, map_dim, -map_dim, map_dim]).enumerate() {
         let pos = layout.hex_to_world_pos(coord);
         let prng = prng.next() as f64 / u64::MAX as f64;
-        let entity = spawn_map_tile(c, i, coord, pos, prng, settings, freq_total, &freqs);
+        let Some(entity) = spawn_map_tile(c, i, coord, pos, prng, settings, freq_total, &freqs, ignore_edge_tiles)
+        else {
+            continue;
+        };
 
         tiles.insert(coord, entity);
         entities.insert(entity, coord);

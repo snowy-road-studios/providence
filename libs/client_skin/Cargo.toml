@@ -12,7 +12,7 @@ default = ["dev"]
 dev = ["bevy_cobweb_ui/dev", "client_core/dev", "game_core/dev", "utils_gui/dev", "wiring_game_instance/dev"]
 
 [dependencies]
-bevy            = { workspace = true, default-features = true }
+bevy            = { workspace = true, default-features = true, features = ["bevy_sprite_picking_backend"] }
 bevy_aseprite_ultra = { workspace = true }
 bevy_cobweb     = { workspace = true }
 bevy_cobweb_ui  = { workspace = true, features = ["colors", "widgets"] } # can't do "serde", messes up reflect(default)

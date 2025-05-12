@@ -1,4 +1,3 @@
-use bevy::picking::pointer::PointerId;
 use bevy::prelude::*;
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -34,7 +33,7 @@ fn handle_new_tile_selected(
 /// Only one tile may be pressed at a time.
 #[derive(Component, Debug, Copy, Clone)]
 #[component(immutable)]
-pub(crate) struct TilePressed(pub(crate) PointerId);
+pub(crate) struct TilePressed;
 
 /// Marker component for tiles that have been selected.
 ///

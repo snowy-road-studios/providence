@@ -123,8 +123,15 @@ fn main()
         .add_systems(
             PreUpdate,
             start_game_system(args.token, args.start_info).run_if(in_state(ClientAppState::Client)),
-        )
-        .run();
+        );
+
+    #[cfg(feature = "egui")]
+    {
+        app.add_plugins(bevy_egui::EguiPlugin { enable_multipass_for_primary_context: true })
+            .add_plugins(bevy_inspector_egui::quick::WorldInspectorPlugin::new());
+    }
+
+    app.run();
 }
 
 //-------------------------------------------------------------------------------------------------------------------

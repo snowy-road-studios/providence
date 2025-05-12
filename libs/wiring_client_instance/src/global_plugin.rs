@@ -96,14 +96,17 @@ impl Plugin for BevyEnginePlugin
     {
         // prepare bevy plugins
         #[allow(unused_mut)]
-        let mut default_plugins = bevy::DefaultPlugins.set(WindowPlugin {
-            primary_window: Some(Window {
-                title: "Providence".into(),
-                window_theme: Some(WindowTheme::Dark),
+        let mut default_plugins = bevy::DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Providence".into(),
+                    window_theme: Some(WindowTheme::Dark),
+                    ..Default::default()
+                }),
                 ..Default::default()
-            }),
-            ..Default::default()
-        });
+            })
+            // Needed for 2D sprites.
+            .set(ImagePlugin::default_nearest());
         #[cfg(target_family = "wasm")]
         {
             // Required to deploy on itch.io.
@@ -166,8 +169,12 @@ fn pipeline_progress(pipelines: Res<PipelinesReady>) -> Progress
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn setup(mut c: Commands)
+fn setup(mut c: Commands, window: Query<Entity, With<PrimaryWindow>>)
 {
+    // Don't receive picking events on the window.
+    let window_entity = window.single().unwrap();
+    c.entity(window_entity).apply(Picking::Ignore);
+
     c.spawn((Camera2d, MainCamera));
 }
 

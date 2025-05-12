@@ -81,21 +81,29 @@ enum MapDrag
     Idle,
     Tracking
     {
-        current: DragState
+        current: DragState, pointer_id: PointerId
     },
     Dragging
     {
-        start: DragState, current: DragState
+        start: DragState, current: DragState, pointer_id: PointerId
     },
 }
 
 impl MapDrag
 {
+    fn pointer_id(&self) -> Option<PointerId>
+    {
+        match self {
+            Self::Idle => None,
+            Self::Tracking { pointer_id, .. } | Self::Dragging { pointer_id, .. } => Some(*pointer_id),
+        }
+    }
+
     fn get_command(&self) -> Option<CameraCommand>
     {
         match self {
             Self::Idle | Self::Tracking { .. } => None,
-            Self::Dragging { start, current } => {
+            Self::Dragging { start, current, .. } => {
                 let window_pos = current.current_window?;
                 // When a new 'map drag phase' starts, we start the map drag from the new drag state's previous
                 // position. This may differ from the drag state's start position if map drag began
@@ -109,7 +117,7 @@ impl MapDrag
     /// Initializes a drag process.
     ///
     /// The map may not be dragged immediately if the cursor is inside its buffer.
-    fn initialize(&mut self, cursor_pos: CursorPosition, current_time: Duration)
+    fn initialize(&mut self, pointer_id: PointerId, cursor_pos: CursorPosition, current_time: Duration)
     {
         let current = DragState {
             start_time: current_time,
@@ -121,14 +129,14 @@ impl MapDrag
             current_pos: cursor_pos.world_pos(),
             current_window: cursor_pos.window_pos(),
         };
-        *self = Self::Tracking { current };
+        *self = Self::Tracking { current, pointer_id };
     }
 
     fn update(&mut self, cursor_pos: CursorPosition)
     {
         match self {
             Self::Idle => (),
-            Self::Tracking { current } | Self::Dragging { current, .. } => {
+            Self::Tracking { current, .. } | Self::Dragging { current, .. } => {
                 current.update(cursor_pos);
             }
         }
@@ -144,11 +152,14 @@ impl MapDrag
     {
         match self {
             Self::Idle | Self::Dragging { .. } => false,
-            Self::Tracking { current } => {
+            Self::Tracking { current, pointer_id } => {
+                let pointer_id = *pointer_id;
+
                 // Begin map drag if the cursor leaves the window.
                 let Some(current_pos) = current.current_pos else {
+                    tracing::trace!("starting map drag; cursor outside window");
                     let current = *current;
-                    *self = Self::Dragging { start: current, current };
+                    *self = Self::Dragging { start: current, current, pointer_id };
                     return true;
                 };
 
@@ -166,8 +177,9 @@ impl MapDrag
                         settings.cursor_buffer_decayrate_secs,
                     )
                 {
+                    tracing::trace!("starting map drag; cursor outside buffer {current:?}");
                     let current = *current;
-                    *self = Self::Dragging { start: current, current };
+                    *self = Self::Dragging { start: current, current, pointer_id };
                     return true;
                 }
 
@@ -187,6 +199,10 @@ impl MapDrag
 /// Reactive event broadcasted when TilePressed should be removed from tiles.
 #[derive(Debug, Copy, Clone)]
 struct RemoveTilePressed;
+
+/// Reactive event broadcasted when TileSelected should be removed from tiles.
+#[derive(Debug, Copy, Clone)]
+struct RemoveTileSelected;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -223,6 +239,15 @@ fn cleanup_pressed_tile(mut c: Commands, pressed: Query<Entity, With<TilePressed
 {
     for pressed in pressed.iter() {
         c.entity(pressed).remove::<TilePressed>();
+    }
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn cleanup_selected_tile(mut c: Commands, pressed: Query<Entity, With<TileSelected>>)
+{
+    for pressed in pressed.iter() {
+        c.entity(pressed).remove::<TileSelected>();
     }
 }
 
@@ -274,11 +299,16 @@ fn handle_press_event(
 )
 {
     // Only presses on tiles in the main window matter.
-    let NormalizedRenderTarget::Window(window_ref) = event.event().pointer_location.target else { return };
+    let NormalizedRenderTarget::Window(window_ref) = event.event().pointer_location.target else {
+        tracing::trace!("map drag: ignoring press event on non-window target");
+        return;
+    };
     if !window.contains(window_ref.entity()) {
+        tracing::trace!("map drag: ignoring press event on non-primary window");
         return;
     }
     if !tiles.contains(event.target()) {
+        //tracing::trace!("map drag: ignoring press event on non-tile entity {:?}", event.target());
         return;
     }
 
@@ -291,15 +321,13 @@ fn handle_press_event(
     match event.event().event.button {
         // left press
         PointerButton::Primary => {
-            c.entity(event.target())
-                .try_insert(TilePressed(event.event().pointer_id));
-            drag.initialize(*cursor_pos, time.elapsed());
+            c.entity(event.target()).try_insert(TilePressed);
+            drag.initialize(event.event().pointer_id, *cursor_pos, time.elapsed());
         }
         // right press
         PointerButton::Secondary => {
-            c.entity(event.target())
-                .remove::<TilePressed>()
-                .remove::<TileSelected>();
+            c.react().broadcast(RemoveTilePressed);
+            c.react().broadcast(RemoveTileSelected);
             drag.end();
         }
         PointerButton::Middle => (),
@@ -337,28 +365,29 @@ fn detect_press_aborted(
     pointers: Query<(&PointerId, &PointerPress)>,
     hovermap: Res<HoverMap>,
     mut drag: ResMut<MapDrag>,
-    pressed: Query<(Entity, &TilePressed)>,
+    tiles: Query<(), With<TileType>>,
 )
 {
-    for (entity, TilePressed(pointer_id)) in pressed.iter() {
-        // TODO: this probably won't work on touch devices (e.g. mobile) where pointer ids change constantly
-        if pointers
-            .iter()
-            .filter(|(id, _)| *id == pointer_id)
-            .filter(|(id, _)| {
-                hovermap
-                    .get(*id)
-                    .map(|e| e.contains_key(&entity))
-                    .unwrap_or_default()
-            })
-            .any(|(_, press)| press.is_primary_pressed())
-        {
-            continue;
-        }
+    let Some(pointer_id) = drag.pointer_id() else { return };
 
-        c.entity(entity).try_remove::<TilePressed>();
-        drag.end();
+    let hover_intersects_map = hovermap
+        .get(&pointer_id)
+        // Note: empty if intersecting empty space, which we treat as 'part of the map'
+        .map(|i| i.is_empty() || i.iter().any(|(e, _)| tiles.contains(*e)))
+        .unwrap_or_default();
+    let pointer_primary_pressed = pointers
+        .iter()
+        .filter(|(id, _)| **id == pointer_id)
+        .any(|(_, press)| press.is_primary_pressed());
+
+    // TODO: this probably won't work on touch devices (e.g. mobile) where pointer ids change constantly
+    if hover_intersects_map && pointer_primary_pressed {
+        return;
     }
+
+    tracing::trace!("aborting map drag; pointer no longer available");
+    c.react().broadcast(RemoveTilePressed);
+    drag.end();
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -402,6 +431,7 @@ impl Plugin for MapControlPlugin
     {
         app.init_resource::<MapDrag>()
             .add_reactor(broadcast::<RemoveTilePressed>(), cleanup_pressed_tile)
+            .add_reactor(broadcast::<RemoveTileSelected>(), cleanup_selected_tile)
             .add_observer(handle_scroll_event)
             .add_observer(handle_press_event)
             .add_observer(handle_click_event)

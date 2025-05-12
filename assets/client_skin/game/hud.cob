@@ -13,27 +13,36 @@ client.zsort as zsort
 
         "name"
             TextLine{size:25}
+            Picking::Ignore
 
         ""
             FlexNode{flex_grow:1}
+            Picking::Ignore
 
         "round_info"
             FlexNode{flex_direction:Row}
+            Picking::Ignore
             "timer"
                 TextLine{size:20}
+                Picking::Ignore
             ""
                 FlexNode{width:25px}
+                Picking::Ignore
             "round"
                 TextLine{size:20}
+                Picking::Ignore
 
         ""
             FlexNode{flex_grow:1}
+            Picking::Ignore
 
         "fps"
             FlexNode{width:65px justify_self_cross:FlexEnd}
+            Picking::Ignore
 
             "text"
                 TextLine{size:15}
+                Picking::Ignore
 
     "center"
         FlexNode{flex_grow:1 flex_direction:Row}

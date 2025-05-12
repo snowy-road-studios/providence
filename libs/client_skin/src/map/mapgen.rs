@@ -35,22 +35,27 @@ fn add_tile_components(
         ec.insert((
             AseSlice { aseprite: aseprite.clone(), name: tag.into() },
             Sprite { custom_size: Some(sprite_size), ..default() },
-            Transform::from_translation(Vec3::default().with_z(map_settings.sorting.tile)),
+            Pickable::default(), /*Transform::from_translation(Vec3::default().with_z(map_settings.sorting.
+                                  * tile)), */
         ));
     }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
+// Includes an offset upwards by half a hex so more edge tiles show at top than bottom.
 fn set_camera_boundary(mut c: Commands, grid: Res<HexGrid>)
 {
-    let upper_right = grid
-        .layout
-        .hex_to_world_pos(Hex { x: grid.dimension, y: -(grid.dimension / 2) });
-    let lower_left = grid.layout.hex_to_world_pos(Hex {
-        x: -grid.dimension,
+    let mut upper_right = grid.layout.hex_to_world_pos(Hex {
+        x: grid.dimension,
         y: (grid.dimension / 2) + (grid.dimension % 2),
     });
+    upper_right.y += grid.layout.rect_size().y / 2.0;
+
+    let mut lower_left = grid
+        .layout
+        .hex_to_world_pos(Hex { x: -grid.dimension, y: -grid.dimension / 2 });
+    lower_left.y += grid.layout.rect_size().y / 2.0;
 
     c.insert_resource(CameraBoundary { upper_right, lower_left });
 }
