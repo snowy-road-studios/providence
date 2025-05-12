@@ -157,7 +157,7 @@ impl MapDrag
 
                 // Begin map drag if the cursor leaves the window.
                 let Some(current_pos) = current.current_pos else {
-                    tracing::trace!("starting map drag; cursor outside window");
+                    //tracing::trace!("starting map drag; cursor outside window");
                     let current = *current;
                     *self = Self::Dragging { start: current, current, pointer_id };
                     return true;
@@ -177,7 +177,7 @@ impl MapDrag
                         settings.cursor_buffer_decayrate_secs,
                     )
                 {
-                    tracing::trace!("starting map drag; cursor outside buffer {current:?}");
+                    //tracing::trace!("starting map drag; cursor outside buffer {current:?}");
                     let current = *current;
                     *self = Self::Dragging { start: current, current, pointer_id };
                     return true;
@@ -385,7 +385,7 @@ fn detect_press_aborted(
         return;
     }
 
-    tracing::trace!("aborting map drag; pointer no longer available");
+    //tracing::trace!("aborting map drag; pointer no longer available");
     c.react().broadcast(RemoveTilePressed);
     drag.end();
 }

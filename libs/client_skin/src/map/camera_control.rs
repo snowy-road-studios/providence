@@ -9,28 +9,22 @@ use crate::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Applies zoom to a camera.
-fn apply_zoom(
-    settings: &CameraSettings,
-    upper_right: &mut Vec2,
-    lower_left: &mut Vec2,
-    scale: &mut f32,
-    factor: f32,
-)
+fn apply_zoom(settings: &CameraSettings, cc: &mut CameraControl, scale: &mut f32, factor: f32)
 {
     let factor = factor.clamp(
         settings.zoom_range.0 / scale.max(0.01),
         settings.zoom_range.1 / scale.max(0.01),
     );
 
-    let current_width = upper_right.x - lower_left.x;
-    let current_height = upper_right.y - lower_left.y;
+    let current_width = cc.upper_right.x - cc.lower_left.x;
+    let current_height = cc.upper_right.y - cc.lower_left.y;
     *scale *= factor;
     let adj = Vec2 {
         x: current_width * (factor - 1.) / 2.,
         y: current_height * (factor - 1.) / 2.,
     };
-    *lower_left -= adj;
-    *upper_right += adj;
+    cc.lower_left -= adj;
+    cc.upper_right += adj;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -39,12 +33,16 @@ fn apply_zoom(
 struct CameraControl
 {
     /// The current zoom target in 2D world coordinates.
-    zoom_target: Option<Vec2>,
+    zoom_target: Vec2,
+    /// lower-left corner of the camera's view in world coordinates.
+    lower_left: Vec2,
+    /// Upper-right corner of the camera's view in world coordinates.
+    upper_right: Vec2,
 }
 
 /// Applies camera commands while taking into account control limits.
 fn apply_camera_command(
-    mut control: Local<CameraControl>,
+    mut cc: Local<CameraControl>,
     command: BroadcastEvent<CameraCommand>,
     mut cameras: Query<(&Camera, &GlobalTransform, &mut Transform, &mut Projection), With<MainCamera>>,
     windows: Query<&Window, With<PrimaryWindow>>,
@@ -60,7 +58,6 @@ fn apply_camera_command(
         tracing::error!("orthographic camera missing in camera commands");
         return;
     };
-
     let Ok(window) = windows.single() else {
         tracing::error!("window missing in camera commands");
         return;
@@ -71,23 +68,7 @@ fn apply_camera_command(
 
     let mut translation = cam_transform.translation;
     let mut scale = cam_projection.scale;
-    let mut lower_left = camera
-        .viewport_to_world_2d(cam_global, Vec2 { x: 0., y: window_dims.y })
-        .unwrap();
-    let mut upper_right = camera
-        .viewport_to_world_2d(cam_global, Vec2 { x: window_dims.x, y: 0. })
-        .unwrap();
-
-    let mut zoom_target = control.zoom_target.unwrap_or_else(|| {
-        // start at the center of the screen
-        // - note: this assumes no correction is needed in the first frame; if the first frame corrects then this
-        //   could theoretically cause unintended shifting
-        Vec2 {
-            x: (upper_right.x + lower_left.x) * 0.5,
-            y: (upper_right.y + lower_left.y) * 0.5,
-        }
-    });
-    let prev_zoom_target = zoom_target;
+    let mut prev_zoom_target = cc.zoom_target;
 
     // Handle the command.
     let mut drag_adjustment = None;
@@ -95,32 +76,59 @@ fn apply_camera_command(
         .try_read()
         .expect("system should be tied to BroadcastEvent<CameraCommand>");
     match camera_command {
-        CameraCommand::WindowResize => (),
+        CameraCommand::Initialize => {
+            let lower_left = camera
+                .viewport_to_world_2d(cam_global, Vec2 { x: 0., y: window_dims.y })
+                .unwrap();
+            let upper_right = camera
+                .viewport_to_world_2d(cam_global, Vec2 { x: window_dims.x, y: 0. })
+                .unwrap();
+            // start at the center of the screen
+            // - note: this assumes no correction is needed in the first frame; if the first frame corrects then
+            //   this could theoretically cause unintended shifting
+            *cc = CameraControl {
+                zoom_target: Vec2 {
+                    x: (upper_right.x + lower_left.x) * 0.5,
+                    y: (upper_right.y + lower_left.y) * 0.5,
+                },
+                lower_left,
+                upper_right,
+            };
+            prev_zoom_target = cc.zoom_target;
+        }
+        CameraCommand::WindowResize => {
+            cc.lower_left = camera
+                .viewport_to_world_2d(cam_global, Vec2 { x: 0., y: window_dims.y })
+                .unwrap();
+            cc.upper_right = camera
+                .viewport_to_world_2d(cam_global, Vec2 { x: window_dims.x, y: 0. })
+                .unwrap();
+        }
         CameraCommand::Center { focus_point } => {
-            let current_width = upper_right.x - lower_left.x;
-            let current_height = upper_right.y - lower_left.y;
+            let current_width = cc.upper_right.x - cc.lower_left.x;
+            let current_height = cc.upper_right.y - cc.lower_left.y;
             translation.x = focus_point.x;
             translation.y = focus_point.y;
-            lower_left = Vec2 {
+            cc.lower_left = Vec2 {
                 x: focus_point.x - (current_width / 2.),
                 y: focus_point.y - (current_height / 2.),
             };
-            upper_right = Vec2 {
+            cc.upper_right = Vec2 {
                 x: focus_point.x + (current_width / 2.),
                 y: focus_point.y + (current_height / 2.),
             };
-            zoom_target = focus_point;
+            cc.zoom_target = focus_point;
         }
         CameraCommand::SetZoom { zoom } => {
             let factor = zoom / scale.max(0.01);
-            apply_zoom(&settings, &mut upper_right, &mut lower_left, &mut scale, factor);
+            apply_zoom(&settings, &mut cc, &mut scale, factor);
         }
         CameraCommand::MultiplyZoom { factor } => {
-            apply_zoom(&settings, &mut upper_right, &mut lower_left, &mut scale, factor);
+            apply_zoom(&settings, &mut cc, &mut scale, factor);
         }
         CameraCommand::Drag { window_pos, target_world_pos } => {
-            let current_width = upper_right.x - lower_left.x;
-            let current_height = upper_right.y - lower_left.y;
+            let current_width = cc.upper_right.x - cc.lower_left.x;
+            let current_height = cc.upper_right.y - cc.lower_left.y;
 
             // translate world position in adjusted camera view
             let mut normalized_window_pos = window_pos;
@@ -134,132 +142,138 @@ fn apply_camera_command(
             }
 
             let translated_window_pos = Vec2 {
-                x: lower_left.x + current_width * normalized_window_pos.x,
-                y: lower_left.y + current_height * (1. - normalized_window_pos.y),
+                x: cc.lower_left.x + current_width * normalized_window_pos.x,
+                y: cc.lower_left.y + current_height * (1. - normalized_window_pos.y),
             };
 
             // translate from target world position to translated end position
             let adj = target_world_pos - translated_window_pos;
             translation.x += adj.x;
             translation.y += adj.y;
-            lower_left += adj;
-            upper_right += adj;
-            zoom_target = translation.truncate();
+            cc.lower_left += adj;
+            cc.upper_right += adj;
+            cc.zoom_target = translation.truncate();
             drag_adjustment = Some(adj);
         }
     }
 
     // apply zoom target
     // - this undoes translation-corrections from the previous frame
-    let target_diff = zoom_target - translation.truncate();
-    translation.x = zoom_target.x;
-    translation.y = zoom_target.y;
-    lower_left += target_diff;
-    upper_right += target_diff;
+    let target_diff = cc.zoom_target - translation.truncate();
+    translation.x = cc.zoom_target.x;
+    translation.y = cc.zoom_target.y;
+    cc.lower_left += target_diff;
+    cc.upper_right += target_diff;
 
     // apply corrections
     let max_width = boundary.upper_right.x - boundary.lower_left.x;
     let max_height = boundary.upper_right.y - boundary.lower_left.y;
 
     // too wide
-    let current_width = (upper_right.x - lower_left.x).max(0.01);
+    let current_width = (cc.upper_right.x - cc.lower_left.x).max(0.01);
 
     if current_width > max_width {
         // translate to midpoint
-        lower_left.x -= translation.x;
-        upper_right.x -= translation.x;
+        cc.lower_left.x -= translation.x;
+        cc.upper_right.x -= translation.x;
         translation.x = 0.;
 
         // add artificial zoom-in
         let factor = max_width / current_width;
-        apply_zoom(&settings, &mut upper_right, &mut lower_left, &mut scale, factor);
+        apply_zoom(&settings, &mut cc, &mut scale, factor);
 
         // repair: vertical position of drag target needs to be maintained
-        // TODO: this never runs because drag_adjustment isn only set for drag commands
+        // TODO: this never runs because drag_adjustment is only set for drag commands
         // TODO: what about SetZoom?
         if let (CameraCommand::MultiplyZoom { factor: zoom }, Some(adj)) = (camera_command, drag_adjustment) {
             let vertical_correction = adj.y * factor * zoom;
-            zoom_target.y -= vertical_correction;
+            cc.zoom_target.y -= vertical_correction;
             translation.y -= vertical_correction;
-            lower_left.y -= vertical_correction;
-            upper_right.y -= vertical_correction;
+            cc.lower_left.y -= vertical_correction;
+            cc.upper_right.y -= vertical_correction;
         }
     }
 
     // too tall
-    let current_height = (upper_right.y - lower_left.y).max(0.01);
+    let current_height = (cc.upper_right.y - cc.lower_left.y).max(0.01);
 
     if current_height > max_height {
         // translate to midpoint
-        upper_right.y -= translation.y;
-        lower_left.y -= translation.y;
+        cc.upper_right.y -= translation.y;
+        cc.lower_left.y -= translation.y;
         translation.y = 0.;
 
         // add artificial zoom-in
         let factor = max_height / current_height;
-        apply_zoom(&settings, &mut upper_right, &mut lower_left, &mut scale, factor);
+        apply_zoom(&settings, &mut cc, &mut scale, factor);
 
         // repair: horizontal position of zoom target needs to be maintained
         // - if this 'cancels' the too-wide x-displacement, it will be fixed by side-constraints below
-        // TODO: this never runs because drag_adjustment isn only set for drag commands
+        // TODO: this never runs because drag_adjustment is only set for drag commands
         // TODO: what about SetZoom?
         if let (CameraCommand::MultiplyZoom { factor: zoom }, Some(adj)) = (camera_command, drag_adjustment) {
             let horizontal_correction = adj.x * factor * zoom;
-            zoom_target.x -= horizontal_correction;
+            cc.zoom_target.x -= horizontal_correction;
             translation.x -= horizontal_correction;
-            lower_left.x -= horizontal_correction;
-            upper_right.x -= horizontal_correction;
+            cc.lower_left.x -= horizontal_correction;
+            cc.upper_right.x -= horizontal_correction;
         }
     }
 
     // left side
-    if lower_left.x < boundary.lower_left.x {
+    if cc.lower_left.x < boundary.lower_left.x {
         // translate to the right
-        let diff = boundary.lower_left.x - lower_left.x;
-        lower_left.x += diff;
-        upper_right.x += diff;
+        let diff = boundary.lower_left.x - cc.lower_left.x;
+        cc.lower_left.x += diff;
+        cc.upper_right.x += diff;
         translation.x += diff;
     }
 
     // right side
-    if upper_right.x > boundary.upper_right.x {
+    if cc.upper_right.x > boundary.upper_right.x {
         // translate to the left
-        let diff = upper_right.x - boundary.upper_right.x;
-        lower_left.x -= diff;
-        upper_right.x -= diff;
+        let diff = cc.upper_right.x - boundary.upper_right.x;
+        cc.lower_left.x -= diff;
+        cc.upper_right.x -= diff;
         translation.x -= diff;
     }
 
     // top
-    if upper_right.y > boundary.upper_right.y {
+    if cc.upper_right.y > boundary.upper_right.y {
         // translate down
-        let diff = upper_right.y - boundary.upper_right.y;
-        upper_right.y -= diff;
-        lower_left.y -= diff;
+        let diff = cc.upper_right.y - boundary.upper_right.y;
+        cc.upper_right.y -= diff;
+        cc.lower_left.y -= diff;
         translation.y -= diff;
     }
 
     // bottom
-    if lower_left.y < boundary.lower_left.y {
+    if cc.lower_left.y < boundary.lower_left.y {
         // translate up
-        let diff = boundary.lower_left.y - lower_left.y;
-        upper_right.y += diff;
-        lower_left.y += diff;
+        let diff = boundary.lower_left.y - cc.lower_left.y;
+        cc.upper_right.y += diff;
+        cc.lower_left.y += diff;
         translation.y += diff;
     }
 
     // if there were changes to the zoom target, refresh it post-corrections
     // - this avoids situations where the zoom target doesn't match visual feedback from drags that run into
     //   boundaries
-    if prev_zoom_target != zoom_target {
-        zoom_target.x = translation.x;
-        zoom_target.y = translation.y;
+    if prev_zoom_target != cc.zoom_target {
+        cc.zoom_target.x = translation.x;
+        cc.zoom_target.y = translation.y;
     }
-    control.zoom_target = Some(zoom_target);
 
     // update camera
     cam_transform.translation = translation;
     cam_projection.scale = scale;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn initialize_camera_commands(mut c: Commands)
+{
+    c.react().broadcast(CameraCommand::Initialize);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -278,6 +292,8 @@ fn check_window_resize(mut resize_events: EventReader<WindowResized>, mut c: Com
 #[derive(Debug, Copy, Clone)]
 pub(crate) enum CameraCommand
 {
+    /// Initializes the camera control state at the start of a game.
+    Initialize,
     /// Correct the camera after the window was resized.
     WindowResize,
     /// Set the focus-point of the camera in 2D world coordinates.
@@ -349,12 +365,8 @@ impl Plugin for CameraControlPlugin
             .init_resource::<CameraSettings>()
             .register_command_type::<CameraSettings>()
             .add_reactor(broadcast::<CameraCommand>(), apply_camera_command)
-            .add_systems(
-                Update,
-                check_window_resize
-                    .in_set(ClientLogicSet::Admin)
-                    .run_if(in_state(ClientFwState::Game)),
-            );
+            .add_systems(OnEnter(ClientFwState::Game), initialize_camera_commands)
+            .add_systems(First, check_window_resize.run_if(in_state(ClientFwState::Game)));
     }
 }
 
