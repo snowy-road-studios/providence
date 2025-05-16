@@ -13,7 +13,7 @@ default = ["dev"]
 dev = ["user_client/dev", "wiring_client_instance/dev", "wiring_game_instance/dev", "wiring_backend/dev"]
 
 [dependencies]
-bevy               = { workspace = true, default-features = true }
+bevy               = { workspace = true }
 clap               = { workspace = true, default-features = true, features = [ "derive" ] }
 enfync             = { workspace = true }
 bevy_simplenet     = { workspace = true, features = [ "client", "bevy" ] }

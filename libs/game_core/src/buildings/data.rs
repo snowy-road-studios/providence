@@ -114,13 +114,12 @@ impl BuildingSpec
                 if *production_per_round == 0 {
                     return Err(format!("{:?} has spec for production-type but production per round is 0", id));
                 }
-            }
-            // BuildingTypeSpec::Service { .. } => {
-            //     // service unit type is known
-            // },
-            // BuildingTypeSpec::Transportation { .. } => {
-            //     // radius not zero
-            // },
+            } /* BuildingTypeSpec::Service { .. } => {
+               *     // service unit type is known
+               * },
+               * BuildingTypeSpec::Transportation { .. } => {
+               *     // radius not zero
+               * }, */
         }
 
         Ok(())

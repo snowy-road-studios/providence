@@ -14,7 +14,7 @@ dev = ["game_core/dev", "wiring_client_instance/dev"]
 egui = ["dep:bevy-inspector-egui", "dep:bevy_egui"]
 
 [dependencies]
-bevy               = { workspace = true, default-features = true }
+bevy               = { workspace = true }
 clap               = { workspace = true, features = [ "derive" ] }
 renet2_setup       = { workspace = true, features = ["netcode"] }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }

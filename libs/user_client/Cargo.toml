@@ -12,7 +12,6 @@ default = ["dev"]
 dev = ["bevy_cobweb_ui/dev"]
 
 [dependencies]
-bevy            = { workspace = true, default-features = true }
 bevy_cobweb     = { workspace = true }
 bevy_cobweb_ui  = { workspace = true, features = ["colors", "widgets"] } # can't do "serde", messes up reflect(default)
 bevy_framepace  = { workspace = true }
@@ -37,3 +36,26 @@ utils = { path = "../utils", default-features = false }
 wiring_backend = { path = "../wiring_backend", default-features = false }
 wiring_client_instance = { path = "../wiring_client_instance", default-features = false }
 wiring_game_instance = { path = "../wiring_game_instance", default-features = false }
+
+[dependencies.bevy]
+workspace = true
+features = [
+  "std",
+  "async_executor",
+  "bevy_asset",
+  "bevy_audio",
+  "bevy_color",
+  "bevy_text",
+  "bevy_state",
+  "bevy_log",
+  "bevy_picking",
+  "bevy_ui",
+  "bevy_ui_picking_backend",
+  "bevy_sprite_picking_backend",
+  "bevy_winit",
+  "custom_cursor",
+  "default_font",
+  "png",
+  "x11",
+  "wav"
+]
