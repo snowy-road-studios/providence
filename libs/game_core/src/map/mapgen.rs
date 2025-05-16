@@ -8,6 +8,15 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+struct MapGenTile<'a>
+{
+    id: TileId,
+    spec: &'a TileSpec,
+    rng_cutoff: f64,
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
 /// Checks if a tile is on the edge of the map using its index in a rectangular `hexx` grid.
 fn is_edge_tile(map_dimension: i32, edge_buffer: i32, i: i32) -> bool
 {
@@ -39,15 +48,15 @@ fn is_edge_tile(map_dimension: i32, edge_buffer: i32, i: i32) -> bool
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn spawn_map_tile(
+fn try_spawn_map_tile(
     c: &mut Commands,
     i: usize,
     coord: Hex,
     pos: Vec2,
     prng: f64,
     settings: &MapGenSettings,
-    total: u64,
-    freqs: &[(u16, TileType)],
+    tiles: &[MapGenTile],
+    edge_tile: &MapGenTile,
     ignore_edge_tiles: bool,
 ) -> Option<Entity>
 {
@@ -57,42 +66,39 @@ fn spawn_map_tile(
         if ignore_edge_tiles {
             return None;
         } else {
-            return Some(
-                c.spawn((EdgeTile(coord), TileType::Mountain, MountainTile, transform))
-                    .id(),
-            );
+            let core = (MapTile(coord), edge_tile.id.clone(), transform);
+            let ec = c.spawn((EdgeTile, core));
+            return Some(ec.id());
         }
     }
 
-    let mut acc: u64 = 0;
-    for (freq, tile) in freqs.iter().copied() {
-        acc += freq as u64;
-        if (acc as f64 / total as f64) < prng {
+    for tile in tiles.iter() {
+        if tile.rng_cutoff < prng {
             continue;
         }
-        match tile {
-            TileType::Mountain => {
-                return Some(
-                    c.spawn((MapTile(coord), tile, MountainTile, transform))
-                        .id(),
-                )
-            }
-            TileType::Water => return Some(c.spawn((MapTile(coord), tile, WaterTile, transform)).id()),
-            TileType::Rocky => return Some(c.spawn((MapTile(coord), tile, RockyTile, transform)).id()),
-            TileType::Ore => return Some(c.spawn((MapTile(coord), tile, OreTile, transform)).id()),
-            TileType::Forest => return Some(c.spawn((MapTile(coord), tile, ForestTile, transform)).id()),
-            TileType::Grass => return Some(c.spawn((MapTile(coord), tile, GrassTile, transform)).id()),
-        }
+        let core = (MapTile(coord), tile.id.clone(), transform);
+        let ec = match (tile.spec.is_ownable, tile.spec.is_water_tile) {
+            (true, true) => c.spawn((OwnableTile, WaterTile, core)),
+            (true, false) => c.spawn((OwnableTile, core)),
+            (false, true) => c.spawn((WaterTile, core)),
+            (false, false) => c.spawn(core),
+        };
+        return Some(ec.id());
     }
 
-    None
+    // Fall back to edge tile if something went wrong.
+    Some(
+        c.spawn((MapTile(coord), edge_tile.id.clone(), transform))
+            .id(),
+    )
 }
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn generate_map(mut c: Commands, ctx: Res<GameContext>, settings: Res<MapGenSettings>)
+fn generate_map(mut c: Commands, ctx: Res<GameContext>, settings: Res<MapGenSettings>, tile_data: Res<TileData>)
 {
-    generate_map_impl(&mut c, map_gen_prng(ctx.seed), &settings, true);
+    // Ignores edge tiles since the game server doesn't use them.
+    generate_map_impl(&mut c, map_gen_prng(ctx.seed), &settings, &tile_data, true);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -108,12 +114,6 @@ pub struct MapGenSettings
     pub map_dimension: i32,
     /// Number of tile layers on the edge of the map containing untouchable boundary tiles.
     pub edge_buffer: u8,
-    pub mountain_tile_frequency: u16,
-    pub water_tile_frequency: u16,
-    pub rocky_tile_frequency: u16,
-    pub ore_tile_frequency: u16,
-    pub forest_tile_frequency: u16,
-    pub grass_tile_frequency: u16,
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -131,21 +131,37 @@ pub struct HexGrid
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Set `ignore_edge_tiles = true` if edge tile entities are not needed (e.g. the server).
-pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings, ignore_edge_tiles: bool)
+pub fn generate_map_impl(
+    c: &mut Commands,
+    prng: u64,
+    settings: &MapGenSettings,
+    tile_data: &TileData,
+    ignore_edge_tiles: bool,
+)
 {
     // prep tile generator
     let mut prng = Rand64::new("MAP GEN PRNG", prng as u128);
 
     // prep tile frequencies
-    let freqs = [
-        (settings.mountain_tile_frequency, TileType::Mountain),
-        (settings.water_tile_frequency, TileType::Water),
-        (settings.rocky_tile_frequency, TileType::Rocky),
-        (settings.ore_tile_frequency, TileType::Ore),
-        (settings.forest_tile_frequency, TileType::Forest),
-        (settings.grass_tile_frequency, TileType::Grass),
-    ];
-    let freq_total: u64 = freqs.iter().map(|(freq, _)| *freq as u64).sum();
+    let mut tiles: Vec<MapGenTile> = tile_data
+        .iter()
+        .scan(0, |factor_sum, (id, spec)| {
+            *factor_sum += spec.mapgen_factor;
+            Some(MapGenTile { id: id.clone(), spec, rng_cutoff: *factor_sum as f64 })
+        })
+        .collect();
+    let factor_total: f64 = tiles
+        .last()
+        .map(|last| last.rng_cutoff)
+        .unwrap_or(1.0)
+        .max(1.0);
+    tiles.iter_mut().for_each(|tile| {
+        tile.rng_cutoff /= factor_total;
+    });
+    let edge_tile = tiles
+        .iter()
+        .find(|tile| tile.spec.is_edge_tile)
+        .expect("should be one edge tile type");
 
     // spawn the hex grid with sprites assigned to each hex
     let layout = HexLayout {
@@ -154,24 +170,27 @@ pub fn generate_map_impl(c: &mut Commands, prng: u64, settings: &MapGenSettings,
         ..default()
     };
     let map_dim = settings.map_dimension;
-
-    let mut tiles = HashMap::default();
-    let mut entities = HashMap::default();
     let dim = map_dim * 2 + 1;
-    tiles.reserve((dim * dim) as usize);
-    entities.reserve((dim * dim) as usize);
+    let map_size = (dim * dim) as usize;
+
+    let mut tile_map = HashMap::default();
+    let mut entities = HashMap::default();
+    tile_map.reserve(map_size);
+    entities.reserve(map_size);
+
     for (i, coord) in hexx::shapes::flat_rectangle([-map_dim, map_dim, -map_dim, map_dim]).enumerate() {
         let pos = layout.hex_to_world_pos(coord);
         let prng = prng.next() as f64 / u64::MAX as f64;
-        let Some(entity) = spawn_map_tile(c, i, coord, pos, prng, settings, freq_total, &freqs, ignore_edge_tiles)
+        let Some(entity) =
+            try_spawn_map_tile(c, i, coord, pos, prng, settings, &tiles, edge_tile, ignore_edge_tiles)
         else {
             continue;
         };
 
-        tiles.insert(coord, entity);
+        tile_map.insert(coord, entity);
         entities.insert(entity, coord);
     }
-    c.insert_resource(HexGrid { tiles, entities, layout, dimension: map_dim });
+    c.insert_resource(HexGrid { tiles: tile_map, entities, layout, dimension: map_dim });
 }
 
 //-------------------------------------------------------------------------------------------------------------------

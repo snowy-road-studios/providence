@@ -10,8 +10,8 @@ use crate::*;
 fn handle_new_tile_pressed(
     event: Trigger<OnAdd, TilePressed>,
     map_settings: Res<MapSettings>,
-    mut tiles: Query<(&mut Sprite, Option<&AttachedMeta>), With<TileType>>,
-    mut attached: Query<&mut Sprite, Without<TileType>>,
+    mut tiles: Query<(&mut Sprite, Option<&AttachedMeta>), With<MapTile>>,
+    mut attached: Query<&mut Sprite, Without<MapTile>>,
 )
 {
     let Ok((mut sprite, maybe_attachment)) = tiles.get_mut(event.target()) else { return };
@@ -26,8 +26,8 @@ fn handle_new_tile_pressed(
 
 fn handle_tile_unpressed(
     event: Trigger<OnRemove, TilePressed>,
-    mut tiles: Query<(&mut Sprite, Option<&AttachedMeta>), With<TileType>>,
-    mut attached: Query<&mut Sprite, Without<TileType>>,
+    mut tiles: Query<(&mut Sprite, Option<&AttachedMeta>), With<MapTile>>,
+    mut attached: Query<&mut Sprite, Without<MapTile>>,
 )
 {
     let Ok((mut sprite, maybe_attachment)) = tiles.get_mut(event.target()) else { return };
@@ -46,18 +46,21 @@ fn handle_new_tile_selected(
     aseprites: Res<AsepriteMap>,
     grid: Res<HexGrid>,
     map_settings: Res<MapSettings>,
-    tiles: Query<(), With<TileType>>,
+    tiles: Query<(), With<MapTile>>,
 )
 {
     debug_assert!(tiles.contains(event.target()));
 
-    let aseprite = aseprites.get(&map_settings.aseprite);
+    let aseprite = aseprites.get(&map_settings.tile_aseprite);
     let sprite_size = grid.layout.rect_size();
 
     c.spawn((
         ChildOf(event.target()),
         TileSelectedEffect,
-        AseSlice { aseprite: aseprite.clone(), name: "effect_selected".into() },
+        AseSlice {
+            aseprite: aseprite.clone(),
+            name: map_settings.select_effect_tag.clone(),
+        },
         Sprite { custom_size: Some(sprite_size), ..default() },
         Transform::from_translation(Vec3::default().with_z(map_settings.sorting.select_effect)),
     ));

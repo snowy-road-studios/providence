@@ -1,0 +1,8 @@
+{
+    "hq-1":{
+        build_cost: System
+        builds_into: [] // hq-2
+        building_type: Hq{ ownable_tiles: 5 }
+        destruction_cost: none
+    }
+}

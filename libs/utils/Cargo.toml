@@ -10,5 +10,5 @@ doctest = false
 [dependencies]
 bevy = { workspace = true }
 serde = { workspace = true }
-toml = { workspace = true, features = ["parse"] }
+cobweb_asset_format = { workspace = true }
 tracing = { workspace = true }

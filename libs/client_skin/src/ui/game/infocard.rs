@@ -17,9 +17,7 @@ fn build_overlay(mut c: Commands, mut s: SceneBuilder)
                 .update_on(
                     broadcast::<AppUpdateEnd>(),
                     |id: TargetId, mut e: TextEditor, buildings: Res<BuildingData>| {
-                        let total_tiles = buildings.get_tileselect_tiles().result()?;
-                        write_text!(e, *id, "SELECT TILES: 0/{}", total_tiles);
-                        OK
+                        write_text!(e, *id, "SELECT TILES: 0/{}", buildings.hq[0].ownable_tiles);
                     },
                 );
         });
@@ -27,9 +25,9 @@ fn build_overlay(mut c: Commands, mut s: SceneBuilder)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-pub(super) struct GameUiTileSelectPlugin;
+pub(super) struct GameUiInfocardPlugin;
 
-impl Plugin for GameUiTileSelectPlugin
+impl Plugin for GameUiInfocardPlugin
 {
     fn build(&self, app: &mut App)
     {

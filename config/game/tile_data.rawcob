@@ -1,0 +1,39 @@
+{
+    "mountain":{
+        is_ownable: false
+        mapgen_factor: 1
+        builds_into: []
+        is_edge_tile: true
+    }
+    "water":{
+        is_ownable: false
+        mapgen_factor: 10
+        builds_into: []
+        is_water_tile: true
+    }
+    "grass":{
+        is_ownable: true
+        mapgen_factor: 65
+        builds_into: []
+    }
+    "forest":{
+        is_ownable: true
+        mapgen_factor: 15
+        builds_into: []
+    }
+    "stone":{
+        is_ownable: true
+        mapgen_factor: 5
+        builds_into: []
+    }
+    "ore":{
+        is_ownable: true
+        mapgen_factor: 5
+        builds_into: []
+    }
+    // "hyperium":{
+    //     is_ownable: true
+    //     mapgen_factor: 15
+    //     builds_into: []
+    // }
+}

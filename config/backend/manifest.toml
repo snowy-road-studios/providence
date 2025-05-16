@@ -1,4 +1,0 @@
-FILES = [
-    "game_hub.toml",
-    "host_backend.toml",
-]

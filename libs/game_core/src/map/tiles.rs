@@ -11,53 +11,27 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Component, Debug, Copy, Clone, Eq, PartialEq, Hash)]
-#[component(immutable)]
-pub enum TileType
-{
-    Mountain,
-    Water,
-    Rocky,
-    Ore,
-    Forest,
-    Grass,
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
-#[derive(Component, Debug, Copy, Clone, Deref)]
-#[component(immutable)]
-pub struct EdgeTile(pub Hex);
-
+/// Component for all map tiles (including edge tiles).
 #[derive(Component, Debug, Copy, Clone, Deref)]
 #[component(immutable)]
 pub struct MapTile(pub Hex);
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Marker component for edge tiles.
 #[derive(Component, Debug, Copy, Clone)]
 #[component(immutable)]
-pub struct MountainTile;
+pub struct EdgeTile;
 
+/// Marker component for tiles that have water proximity effects.
 #[derive(Component, Debug, Copy, Clone)]
 #[component(immutable)]
 pub struct WaterTile;
 
+/// Marker component for tiles that can be owned.
 #[derive(Component, Debug, Copy, Clone)]
 #[component(immutable)]
-pub struct RockyTile;
-
-#[derive(Component, Debug, Copy, Clone)]
-#[component(immutable)]
-pub struct OreTile;
-
-#[derive(Component, Debug, Copy, Clone)]
-#[component(immutable)]
-pub struct ForestTile;
-
-#[derive(Component, Debug, Copy, Clone)]
-#[component(immutable)]
-pub struct GrassTile;
+pub struct OwnableTile;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -66,7 +40,7 @@ pub struct GrassTile;
 /// Causes a [`ParentTile`] component to be auto-inserted.
 ///
 /// Must not be inserted to any entity before the [`HexGrid`] resource has been inserted.
-#[derive(Component, Debug, Copy, Clone, Deref, Serialize, Deserialize)]
+#[derive(Component, Debug, Copy, Clone, Serialize, Deserialize)]
 #[component(immutable)]
 #[component(on_insert = add_parent_tile)]
 #[require(Replicated)]
@@ -94,7 +68,7 @@ fn add_parent_tile(mut w: DeferredWorld, context: HookContext)
 
 //-------------------------------------------------------------------------------------------------------------------
 
-/// Marker component for tiles that can be selected by each player during tile select.
+/// Marker component for tile metas of tiles that can be selected by each player during tile select.
 //TODO: on spawn, must include vis!(Client(client_id))
 //TODO: when a tile is selected, despawn the SelectedTile entity and spawn a TileOwner entity; when deselected,
 //despawn the TileOwner and spawn a SelectedTile
@@ -104,6 +78,8 @@ pub struct SelectableTile
 {
     pub client: u64,
 }
+
+//-------------------------------------------------------------------------------------------------------------------
 
 /// Current claims on an unowned tile.
 #[derive(Component, Debug, Clone, Serialize, Deserialize)]
@@ -150,6 +126,8 @@ impl TileClaims
         self.age
     }
 }
+
+//-------------------------------------------------------------------------------------------------------------------
 
 /// The owner of a tile.
 #[derive(Component, Debug, Copy, Clone, Deref, Serialize, Deserialize)]

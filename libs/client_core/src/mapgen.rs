@@ -9,9 +9,9 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn spawn_map(mut c: Commands, ctx: Res<ClientContext>, settings: Res<MapGenSettings>)
+fn spawn_map(mut c: Commands, ctx: Res<ClientContext>, settings: Res<MapGenSettings>, tile_data: Res<TileData>)
 {
-    generate_map_impl(&mut c, ctx.map_gen_prng, &settings, false);
+    generate_map_impl(&mut c, ctx.map_gen_prng, &settings, &tile_data, false);
     c.react().broadcast(MapGenerated);
 }
 
@@ -28,7 +28,7 @@ impl Plugin for MapgenPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.register_required_components_with::<TileType, StateScoped<ClientAppState>>(|| {
+        app.register_required_components_with::<MapTile, StateScoped<ClientAppState>>(|| {
             StateScoped(ClientAppState::Game)
         })
         .reinit_resource_on_enter::<HexGrid>(ClientAppState::Client)

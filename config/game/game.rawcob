@@ -1,0 +1,22 @@
+{
+    // App config
+    "TICKS_PER_SEC": 15
+
+    // Game server config
+    "RENET2_CONNECTION_EXPIRY_SECS": 10
+    "RENET2_CONNECTION_TIMEOUT_SECS": 5
+    "RENET2_RESEND_TIME_MILLIS": 250
+
+    // Game config
+    "MAX_INIT_DURATION_SECS": 120
+    "END_DURATION_MILLIS": 1000
+    "TILE_SELECT_DURATION_MILLIS": 30000
+    "ROUND_DURATION_MILLIS": 20000
+    "NUM_ROUNDS": 60
+
+    "MAPGEN_SETTINGS":{
+        hex_scale: [65, 45]
+        map_dimension: 40
+        edge_buffer: 2
+    }
+}

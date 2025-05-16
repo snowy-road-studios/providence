@@ -21,7 +21,7 @@ bevy_replicon            = { workspace = true }
 bevy_replicon_attributes = { workspace = true }
 hexx                     = { workspace = true, features = ["serde"] }
 renet2                   = { workspace = true }
-serde                    = { workspace = true }
+serde                    = { workspace = true, features = ["rc"] }
 tracing                  = { workspace = true }
 
 bevy_girk_game_fw = { workspace = true }

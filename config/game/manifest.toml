@@ -1,4 +1,0 @@
-FILES = [
-    "game.toml",
-    "hq_data.toml",
-]

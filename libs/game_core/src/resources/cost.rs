@@ -1,20 +1,13 @@
+use bevy::platform::collections::HashMap;
+use bevy::prelude::Deref;
 use serde::Deserialize;
+
+use super::ResourceId;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct ResourceCost
-{
-    #[serde(default)]
-    pub gold: u64,
-    #[serde(default)]
-    pub food: u64,
-    #[serde(default)]
-    pub wood: u64,
-    #[serde(default)]
-    pub stone: u64,
-    #[serde(default)]
-    pub iron: u64,
-}
+/// Note: does not include gold, which cannot be spent to construct things.
+#[derive(Deserialize, Debug, Clone, Deref)]
+pub struct ResourceCost(pub HashMap<ResourceId, u64>);
 
 //-------------------------------------------------------------------------------------------------------------------

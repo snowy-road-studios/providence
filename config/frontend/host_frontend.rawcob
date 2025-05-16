@@ -1,0 +1,4 @@
+{
+    "LOBBY_LIST_SIZE": 10
+    "ACK_TIMEOUT_MILLIS": 14000
+}

@@ -1,0 +1,5 @@
+[
+    ("game.rawcob" Config)
+    ("building_data.rawcob" Type)
+    ("tile_data.rawcob" Type)
+]

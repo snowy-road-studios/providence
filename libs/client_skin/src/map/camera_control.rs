@@ -71,7 +71,7 @@ fn apply_camera_command(
     let mut prev_zoom_target = cc.zoom_target;
 
     // Handle the command.
-    let mut drag_adjustment = None;
+    //let mut drag_adjustment = None;
     let camera_command = *command
         .try_read()
         .expect("system should be tied to BroadcastEvent<CameraCommand>");
@@ -153,7 +153,7 @@ fn apply_camera_command(
             cc.lower_left += adj;
             cc.upper_right += adj;
             cc.zoom_target = translation.truncate();
-            drag_adjustment = Some(adj);
+            // drag_adjustment = Some(adj);
         }
     }
 
@@ -185,13 +185,13 @@ fn apply_camera_command(
         // repair: vertical position of drag target needs to be maintained
         // TODO: this never runs because drag_adjustment is only set for drag commands
         // TODO: what about SetZoom?
-        if let (CameraCommand::MultiplyZoom { factor: zoom }, Some(adj)) = (camera_command, drag_adjustment) {
-            let vertical_correction = adj.y * factor * zoom;
-            cc.zoom_target.y -= vertical_correction;
-            translation.y -= vertical_correction;
-            cc.lower_left.y -= vertical_correction;
-            cc.upper_right.y -= vertical_correction;
-        }
+        // if let (CameraCommand::MultiplyZoom { factor: zoom }, Some(adj)) = (camera_command, drag_adjustment) {
+        //     let vertical_correction = adj.y * factor * zoom;
+        //     cc.zoom_target.y -= vertical_correction;
+        //     translation.y -= vertical_correction;
+        //     cc.lower_left.y -= vertical_correction;
+        //     cc.upper_right.y -= vertical_correction;
+        // }
     }
 
     // too tall
@@ -211,13 +211,13 @@ fn apply_camera_command(
         // - if this 'cancels' the too-wide x-displacement, it will be fixed by side-constraints below
         // TODO: this never runs because drag_adjustment is only set for drag commands
         // TODO: what about SetZoom?
-        if let (CameraCommand::MultiplyZoom { factor: zoom }, Some(adj)) = (camera_command, drag_adjustment) {
-            let horizontal_correction = adj.x * factor * zoom;
-            cc.zoom_target.x -= horizontal_correction;
-            translation.x -= horizontal_correction;
-            cc.lower_left.x -= horizontal_correction;
-            cc.upper_right.x -= horizontal_correction;
-        }
+        // if let (CameraCommand::MultiplyZoom { factor: zoom }, Some(adj)) = (camera_command, drag_adjustment) {
+        //     let horizontal_correction = adj.x * factor * zoom;
+        //     cc.zoom_target.x -= horizontal_correction;
+        //     translation.x -= horizontal_correction;
+        //     cc.lower_left.x -= horizontal_correction;
+        //     cc.upper_right.x -= horizontal_correction;
+        // }
     }
 
     // left side

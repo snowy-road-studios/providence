@@ -1,0 +1,28 @@
+{
+// // App config
+// TICKS_PER_SEC = 15
+
+// // Game server config
+// RENET2_CONNECTION_EXPIRY_SECS = 10
+// RENET2_CONNECTION_TIMEOUT_SECS = 5
+// RENET2_RESEND_TIME_MILLIS = 250
+
+// // Game config
+// MAX_INIT_DURATION_SECS = 120
+// END_DURATION_MILLIS = 1_000
+// TILE_SELECT_DURATION_MILLIS = 30_000
+// ROUND_DURATION_MILLIS = 20_000
+// NUM_ROUNDS = 60
+
+    // "MAPGEN_SETTINGS":{
+    //     hex_scale = [65, 45]
+    //     map_dimension = 20
+    //     edge_buffer = 2
+    //     mountain_tile_frequency = 1
+    //     water_tile_frequency = 10
+    //     rocky_tile_frequency = 5
+    //     ore_tile_frequency = 5
+    //     forest_tile_frequency = 15
+    //     grass_tile_frequency = 65
+    // }
+}

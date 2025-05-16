@@ -10,33 +10,51 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-fn add_tile_components(
+/// Use separate observer for UI tiles which are spawned ad hoc and in low quantities.
+fn update_ui_tile(
+    event: Trigger<OnAdd, UiTile>,
+    mut c: Commands,
+    aseprites: Res<AsepriteMap>,
+    settings: Res<MapSettings>,
+    tiles: Query<&TileId>,
+)
+{
+    let aseprite = aseprites.get(&settings.tile_aseprite);
+
+    let Ok(tile) = tiles.get(event.target()) else {
+        tracing::error!("UI tile missing TileType on add; insert TileType before UiTile component");
+        return;
+    };
+    let Ok(mut ec) = c.get_entity(event.target()) else { return };
+    ec.insert((
+        AseSlice {
+            aseprite,
+            name: settings.tiles.get(tile).unwrap().aseprite_tag.clone(),
+        },
+        ImageNode::default(),
+    ));
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+
+fn update_map_tiles(
     mut c: Commands,
     aseprites: Res<AsepriteMap>,
     grid: Res<HexGrid>,
-    map_settings: Res<MapSettings>,
-    tiles: Query<(Entity, &TileType)>,
+    settings: Res<MapSettings>,
+    tiles: Query<(Entity, &TileId), With<MapTile>>,
 )
 {
-    let aseprite = aseprites.get(&map_settings.aseprite);
+    let aseprite = aseprites.get(&settings.tile_aseprite);
     let sprite_size = grid.layout.rect_size();
 
-    for (entity, tile) in tiles.iter() {
+    for (entity, tile_id) in tiles.iter() {
         let Ok(mut ec) = c.get_entity(entity) else { continue };
-        let tag = match *tile {
-            TileType::Mountain => "mountain",
-            TileType::Water => "water",
-            TileType::Rocky => "rocky",
-            TileType::Ore => "ore",
-            TileType::Forest => "forest",
-            TileType::Grass => "grass",
-        };
-
+        let Some(info) = settings.tiles.get(tile_id) else { continue };
         ec.insert((
-            AseSlice { aseprite: aseprite.clone(), name: tag.into() },
+            AseSlice { aseprite: aseprite.clone(), name: info.aseprite_tag.clone() },
             Sprite { custom_size: Some(sprite_size), ..default() },
-            Pickable::default(), /*Transform::from_translation(Vec3::default().with_z(map_settings.sorting.
-                                  * tile)), */
+            Pickable::default(),
         ));
     }
 }
@@ -62,14 +80,21 @@ fn set_camera_boundary(mut c: Commands, grid: Res<HexGrid>)
 
 //-------------------------------------------------------------------------------------------------------------------
 
+/// Marker component for tiles rendered in UI.
+#[derive(Component, Debug)]
+pub(crate) struct UiTile;
+
+//-------------------------------------------------------------------------------------------------------------------
+
 pub(super) struct MapgenPlugin;
 
 impl Plugin for MapgenPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_reactor(broadcast::<MapGenerated>(), add_tile_components)
-            .add_reactor(broadcast::<MapGenerated>(), set_camera_boundary);
+        app.add_reactor(broadcast::<MapGenerated>(), update_map_tiles)
+            .add_reactor(broadcast::<MapGenerated>(), set_camera_boundary)
+            .add_observer(update_ui_tile);
     }
 }
 

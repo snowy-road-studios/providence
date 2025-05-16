@@ -257,7 +257,7 @@ fn handle_scroll_event(
     event: Trigger<Pointer<Scroll>>,
     mut c: Commands,
     settings: Res<CameraSettings>,
-    tiles: Query<(), With<TileType>>,
+    tiles: Query<(), With<MapTile>>,
 )
 {
     let scroll_event = &event.event().event;
@@ -295,7 +295,7 @@ fn handle_press_event(
     window: Query<(), With<PrimaryWindow>>,
     cursor_pos: Res<CursorPosition>,
     mut drag: ResMut<MapDrag>,
-    tiles: Query<(), With<TileType>>,
+    tiles: Query<(), With<MapTile>>,
 )
 {
     // Only presses on tiles in the main window matter.
@@ -365,7 +365,7 @@ fn detect_press_aborted(
     pointers: Query<(&PointerId, &PointerPress)>,
     hovermap: Res<HoverMap>,
     mut drag: ResMut<MapDrag>,
-    tiles: Query<(), With<TileType>>,
+    tiles: Query<(), With<MapTile>>,
 )
 {
     let Some(pointer_id) = drag.pointer_id() else { return };
