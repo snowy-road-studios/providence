@@ -2,7 +2,7 @@ use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::Aseprite;
 use bevy_cobweb_ui::prelude::*;
-use game_core::TileData;
+use game_core::{TileData, TileId};
 use utils_gui::{AsepriteMap, LoadAsepriteFiles};
 
 use super::*;
@@ -69,8 +69,7 @@ pub(crate) struct MapSettings
     pub(crate) tile_aseprite: String,
 
     pub(crate) sorting: MapZSorting,
-    //TODO: use TileId instead of String; requires https://github.com/bevyengine/bevy/issues/19304
-    pub(crate) tiles: HashMap<String, GuiTileInfo>,
+    pub(crate) tiles: HashMap<TileId, GuiTileInfo>,
     pub(crate) select_effect_slice: String,
 
     pub(crate) press_color: Color,
@@ -89,7 +88,7 @@ impl MapSettings
     pub(crate) fn validate(&self, tile_data: &TileData) -> Result<(), String>
     {
         for (id, _info) in self.tiles.iter() {
-            if !tile_data.contains_key(id.as_str()) {
+            if !tile_data.contains_key(id) {
                 return Err(format!("MapSettings has {id:?} that is not registered in TileData"));
             }
         }

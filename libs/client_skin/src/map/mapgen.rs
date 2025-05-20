@@ -29,12 +29,7 @@ fn update_ui_tile(
     ec.insert((
         AseSlice {
             aseprite,
-            name: settings
-                .tiles
-                .get(tile.get())
-                .unwrap()
-                .aseprite_slice
-                .clone(),
+            name: settings.tiles.get(tile).unwrap().aseprite_slice.clone(),
         },
         ImageNode::default(),
     ));
@@ -55,7 +50,7 @@ fn update_map_tiles(
 
     for (entity, tile_id) in tiles.iter() {
         let Ok(mut ec) = c.get_entity(entity) else { continue };
-        let Some(info) = settings.tiles.get(tile_id.get()) else { continue };
+        let Some(info) = settings.tiles.get(tile_id) else { continue };
         ec.insert((
             AseSlice {
                 aseprite: aseprite.clone(),

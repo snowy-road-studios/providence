@@ -11,6 +11,7 @@ use crate::*;
 
 /// Component with the canonical ID of a type of building.
 #[derive(Component, Debug, Deserialize, Clone, Eq, PartialEq, Hash, Reflect)]
+#[reflect(Hash, Deserialize)]
 #[component(immutable)]
 pub struct BuildingId(Cow<'static, str>);
 

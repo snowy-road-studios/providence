@@ -11,7 +11,7 @@ use crate::*;
 
 /// Component with the canonical ID of a type of tile.
 #[derive(Component, Debug, Clone, Deserialize, Eq, PartialEq, Hash, Reflect)]
-#[reflect(Hash)]
+#[reflect(Hash, Deserialize)]
 #[component(immutable)]
 pub struct TileId(Cow<'static, str>);
 
