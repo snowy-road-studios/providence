@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::borrow::{Borrow, Cow};
 
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::*;
@@ -11,19 +11,28 @@ use crate::*;
 
 /// Component with the canonical ID of a type of tile.
 #[derive(Component, Debug, Clone, Deserialize, Eq, PartialEq, Hash, Reflect)]
+#[reflect(Hash)]
 #[component(immutable)]
-pub struct TileId(Arc<str>);
+pub struct TileId(Cow<'static, str>);
 
 impl TileId
 {
     pub fn new(id: impl AsRef<str>) -> Self
     {
-        Self(Arc::from(id.as_ref()))
+        Self(Cow::from(String::from(id.as_ref())))
     }
 
     pub fn get(&self) -> &str
     {
         &self.0
+    }
+}
+
+impl Borrow<str> for TileId
+{
+    fn borrow(&self) -> &str
+    {
+        self.get()
     }
 }
 

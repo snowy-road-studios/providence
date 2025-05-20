@@ -4,6 +4,7 @@
 use std::path::PathBuf;
 
 use bevy::prelude::*;
+use bevy_cobweb_ui::prelude::LoadState;
 use bevy_girk_client_fw::ClientAppState;
 use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::GameStartInfo;
@@ -122,7 +123,9 @@ fn main()
         // Can't do this in Update otherwise we might skip past ClientInitState::InProgress.
         .add_systems(
             PreUpdate,
-            start_game_system(args.token, args.start_info).run_if(in_state(ClientAppState::Client)),
+            start_game_system(args.token, args.start_info)
+                .run_if(in_state(ClientAppState::Client))
+                .run_if(in_state(LoadState::Done)),
         );
 
     #[cfg(feature = "egui")]

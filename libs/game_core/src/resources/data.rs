@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::borrow::{Borrow, Cow};
 
 use bevy::platform::collections::HashSet;
 use bevy::prelude::*;
@@ -9,18 +9,26 @@ use serde::Deserialize;
 /// Component with the canonical ID of a type of resource.
 #[derive(Component, Debug, Deserialize, Clone, Eq, PartialEq, Hash)]
 #[component(immutable)]
-pub struct ResourceId(Arc<str>);
+pub struct ResourceId(Cow<'static, str>);
 
 impl ResourceId
 {
     pub fn new(id: impl AsRef<str>) -> Self
     {
-        Self(Arc::from(id.as_ref()))
+        Self(Cow::from(String::from(id.as_ref())))
     }
 
     pub fn get(&self) -> &str
     {
         &self.0
+    }
+}
+
+impl Borrow<str> for ResourceId
+{
+    fn borrow(&self) -> &str
+    {
+        self.get()
     }
 }
 

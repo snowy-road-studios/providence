@@ -15,7 +15,7 @@
     "NUM_ROUNDS": 60
 
     "MAPGEN_SETTINGS":{
-        hex_scale: [65, 45]
+        hex_scale: (65, 45)
         map_dimension: 40
         edge_buffer: 2
     }

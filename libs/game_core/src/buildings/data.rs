@@ -1,5 +1,4 @@
-use std::borrow::Borrow;
-use std::sync::Arc;
+use std::borrow::{Borrow, Cow};
 
 use bevy::platform::collections::{HashMap, HashSet};
 use bevy::prelude::*;
@@ -11,15 +10,15 @@ use crate::*;
 //-------------------------------------------------------------------------------------------------------------------
 
 /// Component with the canonical ID of a type of building.
-#[derive(Component, Debug, Deserialize, Clone, Eq, PartialEq, Hash)]
+#[derive(Component, Debug, Deserialize, Clone, Eq, PartialEq, Hash, Reflect)]
 #[component(immutable)]
-pub struct BuildingId(Arc<str>);
+pub struct BuildingId(Cow<'static, str>);
 
 impl BuildingId
 {
     pub fn new(id: impl AsRef<str>) -> Self
     {
-        Self(Arc::from(id.as_ref()))
+        Self(Cow::from(String::from(id.as_ref())))
     }
 
     pub fn get(&self) -> &str

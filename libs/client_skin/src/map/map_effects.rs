@@ -59,7 +59,7 @@ fn handle_new_tile_selected(
         TileSelectedEffect,
         AseSlice {
             aseprite: aseprite.clone(),
-            name: map_settings.select_effect_tag.clone(),
+            name: map_settings.select_effect_slice.clone(),
         },
         Sprite { custom_size: Some(sprite_size), ..default() },
         Transform::from_translation(Vec3::default().with_z(map_settings.sorting.select_effect)),

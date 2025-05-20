@@ -7,6 +7,7 @@ use bevy::prelude::*;
 use bevy::render::camera::NormalizedRenderTarget;
 use bevy::window::PrimaryWindow;
 use bevy_cobweb::prelude::*;
+use bevy_girk_client_fw::ClientFwState;
 
 use super::*;
 use crate::*;
@@ -435,7 +436,12 @@ impl Plugin for MapControlPlugin
             .add_observer(handle_scroll_event)
             .add_observer(handle_press_event)
             .add_observer(handle_click_event)
-            .add_systems(Update, (detect_press_aborted, handle_map_drag).chain());
+            .add_systems(
+                Update,
+                (detect_press_aborted, handle_map_drag)
+                    .chain()
+                    .run_if(in_state(ClientFwState::Game)),
+            );
     }
 }
 

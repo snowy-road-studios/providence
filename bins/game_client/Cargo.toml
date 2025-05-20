@@ -15,6 +15,7 @@ egui = ["dep:bevy-inspector-egui", "dep:bevy_egui"]
 
 [dependencies]
 bevy               = { workspace = true }
+bevy_cobweb_ui     = { workspace = true }
 clap               = { workspace = true, features = [ "derive" ] }
 renet2_setup       = { workspace = true, features = ["netcode"] }
 tracing-subscriber = { workspace = true, features = [ "env-filter", "std" ] }

@@ -2,13 +2,15 @@ use bevy::platform::collections::HashMap;
 use bevy::prelude::*;
 use bevy_aseprite_ultra::prelude::Aseprite;
 use bevy_cobweb_ui::prelude::*;
-use game_core::{TileData, TileId};
+use game_core::TileData;
 use utils_gui::{AsepriteMap, LoadAsepriteFiles};
 
 use super::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
+// Inserting MapSettings causes the tile aseprite to be loaded, so this function will never 'miss' asset events
+// for that file.
 fn validate_aseprite(
     mut events: EventReader<AssetEvent<Aseprite>>,
     settings: Res<MapSettings>,
@@ -52,7 +54,7 @@ pub(crate) struct MapZSorting
 #[derive(Default, Debug, Reflect, PartialEq)]
 pub(crate) struct GuiTileInfo
 {
-    pub(crate) aseprite_tag: String,
+    pub(crate) aseprite_slice: String,
     pub(crate) display_name: String,
 }
 
@@ -67,8 +69,9 @@ pub(crate) struct MapSettings
     pub(crate) tile_aseprite: String,
 
     pub(crate) sorting: MapZSorting,
-    pub(crate) tiles: HashMap<TileId, GuiTileInfo>,
-    pub(crate) select_effect_tag: String,
+    //TODO: use TileId instead of String; requires https://github.com/bevyengine/bevy/issues/19304
+    pub(crate) tiles: HashMap<String, GuiTileInfo>,
+    pub(crate) select_effect_slice: String,
 
     pub(crate) press_color: Color,
 
@@ -86,7 +89,7 @@ impl MapSettings
     pub(crate) fn validate(&self, tile_data: &TileData) -> Result<(), String>
     {
         for (id, _info) in self.tiles.iter() {
-            if !tile_data.contains_key(id) {
+            if !tile_data.contains_key(id.as_str()) {
                 return Err(format!("MapSettings has {id:?} that is not registered in TileData"));
             }
         }
@@ -100,10 +103,10 @@ impl MapSettings
     fn validate_aseprite(&self, aseprite: &Aseprite) -> Result<(), String>
     {
         for (tile_id, tile_info) in self.tiles.iter() {
-            if !aseprite.tags.contains_key(&tile_info.aseprite_tag) {
+            if !aseprite.slices.contains_key(&tile_info.aseprite_slice) {
                 return Err(
-                    format!("MapSettings {tile_id:?} has tag {:?} not present in aseprite file",
-                    tile_info.aseprite_tag),
+                    format!("MapSettings {tile_id:?} has slice {:?} not present in aseprite file",
+                    tile_info.aseprite_slice),
                 );
             }
         }

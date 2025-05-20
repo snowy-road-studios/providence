@@ -156,7 +156,9 @@ impl RootConfigEntry
                 };
 
                 for entry in map.entries.iter() {
-                    let CobMapEntry::KeyValue(kv) = entry else {
+                    #[allow(irrefutable_let_patterns)]
+                    let CobMapEntry::KeyValue(kv) = entry
+                    else {
                         return Err(format!("failed reading config file {:?}; value is not key-value map",
                             root_path.join(&path)));
                     };

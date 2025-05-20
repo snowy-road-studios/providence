@@ -10,7 +10,8 @@ impl Plugin for MapPlugin
 {
     fn build(&self, app: &mut App)
     {
-        app.add_plugins(MapGenPlugin);
+        app.add_plugins(MapGenPlugin)
+            .register_type::<super::TileId>();
     }
 }
 
