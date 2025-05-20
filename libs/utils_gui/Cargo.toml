@@ -13,10 +13,17 @@ default = ["dev"]
 dev = []
 
 [dependencies]
-bevy = { workspace = true }
 bevy_aseprite_ultra = { workspace = true }
 bevy_cobweb = { workspace = true }
 bevy_cobweb_ui = { workspace = true }
+ordered-float = { workspace = true }
 fluent-langneg = { workspace = true }
 serde = { workspace = true }
 tracing = { workspace = true }
+
+[dependencies.bevy]
+workspace = true
+features = [
+    "std",
+    "bevy_picking"
+]

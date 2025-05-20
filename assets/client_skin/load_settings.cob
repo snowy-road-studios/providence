@@ -7,11 +7,6 @@ CameraSettings{
 MapSettings{
     tile_aseprite: "client_skin/assets/tiles.aseprite"
 
-    sorting: {
-        tile: 0.0
-        select_effect: 0.01
-        building: 0.02
-    }
     tiles: {
         "mountain": { aseprite_slice:"mountain" display_name:"Mountain Tile" }
         "water": { aseprite_slice:"water" display_name:"Water Tile" }
@@ -23,7 +18,7 @@ MapSettings{
     }
     select_effect_slice: "effect_selected"
 
-    press_color: #C0C0C0
+    press_color: #E0E0E0
 
     cursor_buffer_min: 10.0
     cursor_buffer_start: 100.0

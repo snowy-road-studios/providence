@@ -39,18 +39,6 @@ fn validate_aseprite(
 
 //-------------------------------------------------------------------------------------------------------------------
 
-// TODO: replace this with sprite sorting (required if NPCs introduced, since they can walk in front of and
-// behind buildings)
-#[derive(Default, Debug, Reflect, PartialEq)]
-pub(crate) struct MapZSorting
-{
-    pub(crate) tile: f32,
-    pub(crate) select_effect: f32,
-    pub(crate) building: f32,
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-
 #[derive(Default, Debug, Reflect, PartialEq)]
 pub(crate) struct GuiTileInfo
 {
@@ -68,7 +56,6 @@ pub(crate) struct MapSettings
     /// Tiles are accessed via aseprite tag.
     pub(crate) tile_aseprite: String,
 
-    pub(crate) sorting: MapZSorting,
     pub(crate) tiles: HashMap<TileId, GuiTileInfo>,
     pub(crate) select_effect_slice: String,
 
