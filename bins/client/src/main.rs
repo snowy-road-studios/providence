@@ -5,13 +5,12 @@ use bevy::prelude::*;
 use bevy_girk_backend_public::*;
 use bevy_girk_client_instance::*;
 use bevy_girk_game_instance::GameFactory;
-use bevy_girk_utils::Rand64;
 use clap::Parser;
 use user_client::*;
 use utils::{ConfigDirectories, RootConfigs};
 use wasm_timer::{SystemTime, UNIX_EPOCH};
 use wiring_client_instance::ProvClientFactory;
-use wiring_game_instance::ProvGameFactory;
+use wiring_game_instance::{protocol_id, ProvGameFactory};
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -109,9 +108,6 @@ fn sub_dirs() -> Vec<&'static str>
 
 fn run_app(args: ClientCliResolved, configs: RootConfigs, config_dirs: ConfigDirectories)
 {
-    //TODO: use hasher directly?
-    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-
     // make URL
     let host = if args.host_is_wss { "wss" } else { "ws" };
     let url = format!("{host}://{}/ws", args.server_addr.as_str());
@@ -137,6 +133,7 @@ fn run_app(args: ClientCliResolved, configs: RootConfigs, config_dirs: ConfigDir
     let timer_configs = timer_configs(&configs).unwrap();
 
     // client factory for setting up games
+    let protocol_id = protocol_id();
     let client_factory = ProvClientFactory::new(protocol_id, &configs).unwrap();
 
     // factory for local-player games

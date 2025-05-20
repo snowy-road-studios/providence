@@ -13,6 +13,7 @@ use clap::Parser;
 use renet2_setup::ServerConnectToken;
 use utils::RootConfigs;
 use wiring_client_instance::*;
+use wiring_game_instance::protocol_id;
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -113,7 +114,7 @@ fn main()
         RootConfigs::new_with_overrides(&args.config_dir, &CONFIGS_OVERRIDE_DIR.into(), &sub_dirs).unwrap();
 
     // make client factory
-    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
+    let protocol_id = protocol_id();
     let client_factory = ProvClientFactory::new(protocol_id, &configs).unwrap();
 
     let mut app = App::new();

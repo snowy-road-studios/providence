@@ -10,7 +10,7 @@ doctest = false
 
 [features]
 default = ["dev"]
-dev = ["game_core/dev", "wiring_client_instance/dev"]
+dev = ["game_core/dev", "wiring_client_instance/dev", "wiring_game_instance/dev"]
 egui = ["dep:bevy-inspector-egui", "dep:bevy_egui"]
 
 [dependencies]
@@ -29,6 +29,7 @@ bevy_girk_utils           = { workspace = true, features = ["process"] }
 game_core = { path = "../../libs/game_core", default-features = false }
 utils = { path = "../../libs/utils", default-features = false }
 wiring_client_instance = { path = "../../libs/wiring_client_instance", default-features = false }
+wiring_game_instance = { path = "../../libs/wiring_game_instance", default-features = false }
 
 bevy-inspector-egui = { version = "0.31", optional = true }
 bevy_egui = { version = "0.34", default-features = false, optional = true }

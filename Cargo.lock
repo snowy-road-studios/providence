@@ -3934,6 +3934,7 @@ dependencies = [
  "tracing-subscriber",
  "utils",
  "wiring_client_instance",
+ "wiring_game_instance",
 ]
 
 [[package]]
@@ -8926,6 +8927,7 @@ dependencies = [
 name = "wiring_game_instance"
 version = "0.0.1"
 dependencies = [
+ "ahash",
  "bevy",
  "bevy_girk_client_fw",
  "bevy_girk_game_fw",

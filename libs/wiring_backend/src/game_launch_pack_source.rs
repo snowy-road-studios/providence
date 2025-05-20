@@ -14,20 +14,6 @@ use crate::*;
 
 //-------------------------------------------------------------------------------------------------------------------
 
-// Use this method in the crate that instantiates a launch pack source.
-/*
-const PACKAGE_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-fn get_protocol_id() -> u64
-{
-    let mut hasher = AHasher::default();
-    PACKAGE_VERSION.hash(&mut hasher);
-    hasher.finish()
-}
-*/
-
-//-------------------------------------------------------------------------------------------------------------------
-
 fn make_player_init_data(connection: ConnectionType, user_id: u128, client_id: ClientId) -> ClientGameInit
 {
     let client_type = ClientTypeInfo::Player { player_name: format!("player{}", client_id) };

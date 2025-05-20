@@ -52,6 +52,7 @@ bevy_girk_wiring_common     = { git = "https://github.com/UkoeHB/bevy_girk", rev
 bevy_girk_wiring_server     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "21eca73" }
 bevy_girk_wiring_client     = { git = "https://github.com/UkoeHB/bevy_girk", rev = "21eca73" }
 
+ahash              = { version = "0.8", default-features = false }
 axum-server        = { version = "0.7", default-features = false }  # Locked to bevy_simplenet's axum-server version.
 clap               = { version = "4.4", default-features = false, features = [ "std" ] }
 cobweb_asset_format = { version = "0.2", default-features = false }

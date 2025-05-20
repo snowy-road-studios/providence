@@ -2,12 +2,11 @@ use std::net::Ipv6Addr;
 use std::time::Duration;
 
 use bevy_girk_game_fw::*;
-use bevy_girk_utils::Rand64;
 use game_core::*;
 use renet2_setup::GameServerSetupConfig;
 use utils::RootConfigs;
 
-use crate::ProvGameFactoryConfig;
+use crate::{protocol_id, ProvGameFactoryConfig};
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -28,13 +27,9 @@ pub fn extract_game_configs(
     configs: &RootConfigs,
 ) -> Result<ProvGameConfig, String>
 {
-    // versioning
-    //todo: use hasher directly?
-    let protocol_id = Rand64::new(env!("CARGO_PKG_VERSION"), 0u128).next();
-
     // server setup config
     let server_setup_config = GameServerSetupConfig {
-        protocol_id,
+        protocol_id: protocol_id(),
         expire_secs: configs.get_integer("game", "RENET2_CONNECTION_EXPIRY_SECS")?,
         timeout_secs: configs.get_integer("game", "RENET2_CONNECTION_TIMEOUT_SECS")?,
         server_ip: factory_config
