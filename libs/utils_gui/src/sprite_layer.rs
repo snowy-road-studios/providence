@@ -40,7 +40,7 @@ fn propagate_layers_recursive<Layer: LayerIndex>(
     propagated_layer: Layer,
     maybe_children: Option<&Children>,
     transforms: &Query<&mut GlobalTransform>,
-    query: &Query<Option<&Children>>,
+    query: &Query<(Option<&Children>, Option<&LayerOverride<Layer>>)>,
     layers: &mut Vec<(ZIndexSortKey, f32, Entity)>,
 )
 {
@@ -55,16 +55,12 @@ fn propagate_layers_recursive<Layer: LayerIndex>(
 
     let Some(children) = maybe_children else { return };
     for child in children {
-        let Ok(maybe_children) = query.get(*child) else { continue };
-        propagate_layers_recursive(
-            need_sortkey,
-            *child,
-            propagated_layer,
-            maybe_children,
-            transforms,
-            query,
-            layers,
-        );
+        let Ok((maybe_children, maybe_override)) = query.get(*child) else { continue };
+        let layer = maybe_override
+            .copied()
+            .map(|o| o.0)
+            .unwrap_or(propagated_layer);
+        propagate_layers_recursive(need_sortkey, *child, layer, maybe_children, transforms, query, layers);
     }
 }
 
@@ -87,7 +83,7 @@ fn update_z_coordinates<Layer: LayerIndex>(
     mut layers: Local<Vec<(ZIndexSortKey, f32, Entity)>>,
     options: Res<SpriteLayerOptions>,
     root_layers: Query<(Entity, &Layer, Option<&Children>)>,
-    children: Query<Option<&Children>>,
+    children: Query<(Option<&Children>, Option<&LayerOverride<Layer>>)>,
     mut transforms: Query<&mut GlobalTransform>,
 )
 {
@@ -136,8 +132,7 @@ fn update_z_coordinates<Layer: LayerIndex>(
 /// component to any entity you want to treat as a sprite. Note that this will
 /// propagate to children. Entities with a `LayerIndex` component are treated
 /// as root entities for propagation even if they are not hierarchically root entities.
-// TODO: use LayerOverride(Layer) wrapper component to allow descendant subtrees to override their parents' layer.
-pub trait LayerIndex: Eq + Hash + Component + Copy + Clone + Debug
+pub trait LayerIndex: Eq + Component + Copy + Clone + Debug
 {
     /// The actual numeric z-value that the layer index corresponds to.  Note
     /// that the z-value for an entity can be any value in the range
@@ -149,6 +144,15 @@ pub trait LayerIndex: Eq + Hash + Component + Copy + Clone + Debug
     /// 1000.0. Prefer smaller z-values since that gives more precision.
     fn as_z_coordinate(&self) -> f32;
 }
+
+//-------------------------------------------------------------------------------------------------------------------
+
+/// Wrapper component for a [`LayerIndex`]. Insert this to entities if they have a hierarchical ancestor with a
+/// [`LayerIndex`] component and you want to override that component (which will be propagated to descendants
+/// otherwise).
+#[derive(Component, Copy, Clone, Debug, Eq, PartialEq)]
+#[require(Transform)]
+pub struct LayerOverride<L: LayerIndex>(pub L);
 
 //-------------------------------------------------------------------------------------------------------------------
 
@@ -244,6 +248,7 @@ mod tests
     use super::*;
 
     #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Component)]
+    #[require(Transform)]
     enum Layer
     {
         Top,
@@ -317,23 +322,18 @@ mod tests
         assert!(get_z(app.world(), middle) < get_z(app.world(), top));
     }
 
-    fn layer_bundle(layer: Layer) -> impl Bundle
-    {
-        (transform_at(0.0, 0.0), layer)
-    }
-
     #[test]
     fn inherited()
     {
         let mut app = test_app();
-        let top = app.world_mut().spawn(layer_bundle(Layer::Top)).id();
+        let top = app.world_mut().spawn(Layer::Top).id();
         let child_with_layer = app
             .world_mut()
-            .spawn((layer_bundle(Layer::Middle), ChildOf(top)))
+            .spawn((LayerOverride(Layer::Middle), ChildOf(top)))
             .id();
         let child_without_layer = app
             .world_mut()
-            .spawn((transform_at(0.0, 0.0), ChildOf(top)))
+            .spawn((Transform::default(), ChildOf(top)))
             .id();
         app.update();
 
@@ -377,11 +377,11 @@ mod tests
     fn child_with_no_transform()
     {
         let mut app = test_app();
-        let entity = app.world_mut().spawn(layer_bundle(Layer::Top)).id();
+        let entity = app.world_mut().spawn(Layer::Top).id();
         let child = app.world_mut().spawn(ChildOf(entity)).id();
         let grandchild = app
             .world_mut()
-            .spawn((transform_at(0.0, 0.0), ChildOf(child)))
+            .spawn((Transform::default(), ChildOf(child)))
             .id();
         app.update();
         assert_eq!(
